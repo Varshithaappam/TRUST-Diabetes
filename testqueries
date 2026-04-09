@@ -1,0 +1,42 @@
+//for diabetes control status based on HBA1C values, we will consider the following thresholds:  (control trends dashboard)
+WITH MonthlyLatestVisit AS (
+    -- Get the latest HBA1C per patient per month
+    SELECT DISTINCT ON ("PatientID", date_trunc('month', "Observation_Date"))
+        "PatientID",
+        date_trunc('month', "Observation_Date")::date as visit_month,
+        (NULLIF(substring("Value"::text from '([0-9]+\.?[0-9]*)'), '')::numeric) as hba1c_val
+    FROM public.lab_observation
+    WHERE "LOINCCode" = '4548-4'
+      AND "Observation_Date"::date >= '2024-09-01' 
+      AND "Observation_Date"::date <= '2025-10-08'
+    ORDER BY "PatientID", date_trunc('month', "Observation_Date"), "Observation_Date" DESC 
+)
+SELECT 
+    visit_month AS "date",
+    COUNT(*) FILTER (WHERE hba1c_val < 7.0) AS "no of controlled",
+    COUNT(*) FILTER (WHERE hba1c_val > 9.0) AS "no of uncontrolled",
+    COUNT(*) FILTER (WHERE hba1c_val BETWEEN 7.0 AND 9.0) AS "no of moderate",
+    COUNT(*) FILTER (WHERE hba1c_val IS NULL) AS "no of not evaluated"
+FROM MonthlyLatestVisit
+GROUP BY visit_month
+ORDER BY visit_month DESC;
+
+
+
+//for lab trends dashboard, we will consider the following lab tests: HBA1C and Cholesterol. We will extract the latest values for each patient for a specific month (e.g., September 2024) and ensure that we safely handle any non-numeric values in the "Value" field.
+SELECT
+    "PatientID",
+    "Observation_Date" AS visit_date,
+    -- Safely extract numeric HbA1c value [cite: 9, 140]
+    NULLIF(substring(MAX(CASE WHEN "LOINCCode" = '4548-4' THEN "Value" END)::text from '([0-9]+\.?[0-9]*)'), '')::numeric AS hba1c,
+    -- Safely extract numeric Cholesterol value [cite: 8, 135]
+    NULLIF(substring(MAX(CASE WHEN "LOINCCode" = '2093-3' THEN "Value" END)::text from '([0-9]+\.?[0-9]*)'), '')::numeric AS cholesterol
+FROM public.lab_observation
+WHERE 
+    -- Filter for a specific month (e.g., September 2024) [cite: 114, 117]
+    date_trunc('month', "Observation_Date") = '2024-09-01'::date
+GROUP BY 
+    "PatientID", 
+    "Observation_Date"
+ORDER BY 
+    "Observation_Date" DESC;
