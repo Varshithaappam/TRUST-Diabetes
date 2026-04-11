@@ -112,3 +112,4 @@ const HighRiskList = ({ onSelect, selectedId, scoredPatients }) => {
 };
 
 export default HighRiskList;
+

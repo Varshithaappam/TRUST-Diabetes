@@ -52,15 +52,15 @@ const AIAnalyst = ({ globalFilters }) => {
     return (
         <div className="max-w-4xl mx-auto p-6 space-y-8">
             <header>
-                <h2 className="text-2xl font-bold flex items-center gap-2">
+                <h2 className="text-2xl font-bold flex items-center gap-2 font-display-bold">
                     <Sparkles className="text-blue-600" /> AI Analyst
                 </h2>
-                <p className="text-slate-500">Ask natural language questions about the filtered patient cohort.</p>
+                <p className="text-slate-500 font-electronic-regular">Ask natural language questions about the filtered patient cohort.</p>
             </header>
 
             {/* Suggestions Section */}
             <div>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Suggested Queries</p>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 font-electronic-bold">Suggested Queries</p>
                 <div className="flex flex-wrap gap-2">
                     {suggestions.map(s => (
                         <button 
@@ -81,7 +81,7 @@ const AIAnalyst = ({ globalFilters }) => {
                         {error ? <AlertCircle size={18} /> : <Sparkles size={18} />}
                         {error ? (cooldown > 0 ? 'Rate Limited' : 'Error') : 'Analysis Result'}
                     </div>
-                    <p className="text-slate-800 leading-relaxed">{result || error}</p>
+                    <p className="text-slate-800 leading-relaxed font-electronic-regular">{result || error}</p>
                     {cooldown > 0 && (
                         <p className="text-xs text-red-500 mt-2 flex items-center gap-1">
                             <Clock size={12} /> Please wait {cooldown} seconds before trying again

@@ -1,1 +1,91 @@
+/* 1. Imports MUST come first */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Avenir:wght@300;400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
+
+/* 2. Then your custom layers */
+@layer base {
+  html {
+    /* PDF Requirement: 11pt for electronic media */
+    font-size: 11pt;
+  }
+  
+  body {
+    font-family: 'Noto Serif', serif;
+    color: #1a1a1a;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Noto Serif', serif;
+    font-weight: 700; 
+  }
+}
+
+/* ============================================
+   FONT UTILITY CLASSES
+   ============================================ */
+
+/* 
+   ELECTRONIC MEDIA - Noto Serif
+   Use for: Clinical data, tables, forms, AI content, filters, nav links, notifications
+   Requirements: 11pt, Regular/Bold/Italic
+*/
+.font-electronic {
+  font-family: 'Noto Serif', serif;
+}
+
+.font-electronic-regular {
+  font-family: 'Noto Serif', serif;
+  font-weight: 400;
+}
+
+.font-electronic-bold {
+  font-family: 'Noto Serif', serif;
+  font-weight: 700;
+}
+
+.font-electronic-italic {
+  font-family: 'Noto Serif', serif;
+  font-style: italic;
+}
+
+/* 
+   STATIONARY / DISPLAY - Avenir
+   Use for: Logo, hero numbers, card titles, buttons, section headers
+   Requirements: Light to Black weights
+*/
+.font-display {
+  font-family: 'Avenir', sans-serif;
+}
+
+.font-display-light {
+  font-family: 'Avenir', sans-serif;
+  font-weight: 300;
+}
+
+.font-display-regular {
+  font-family: 'Avenir', sans-serif;
+  font-weight: 400;
+}
+
+.font-display-medium {
+  font-family: 'Avenir', sans-serif;
+  font-weight: 500;
+}
+
+.font-display-semibold {
+  font-family: 'Avenir', sans-serif;
+  font-weight: 600;
+}
+
+.font-display-bold {
+  font-family: 'Avenir', sans-serif;
+  font-weight: 700;
+}
+
+.font-display-black {
+  font-family: 'Avenir', sans-serif;
+  font-weight: 900;
+}

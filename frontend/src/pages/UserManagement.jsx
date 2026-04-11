@@ -4,19 +4,29 @@ import { useAuth } from '../context/AuthContext';
 import { 
     Users, Check, X, UserPlus, Search, 
     MapPin, Building2, Phone, Mail, User, 
-    ChevronDown, Plus, Trash2, Globe
+    ChevronDown, Plus, Trash2, Globe, UserCheck, UserX
 } from 'lucide-react';
 
 // ============================================
 // COMPONENT: Searchable Multi-Select Dropdown
 // ============================================
-const MultiSelectDropdown = ({ label, options = [], selected = [], onChange, placeholder = 'Search...', loading = false }) => {
+const MultiSelectDropdown = ({ 
+    label, 
+    options = [], 
+    selected = [], 
+    onChange, 
+    placeholder = 'Search...', 
+    loading = false,
+    idKey,      // 'site_id' or 'clinic_id'
+    labelKey    // 'site_name' or 'clinic_name'
+}) => {
     const [isOpen, setIsOpen] = useState(false);
     const [search, setSearch] = useState('');
     const wrapperRef = useRef(null);
 
+    // Filter based on the specific labelKey provided
     const filteredOptions = options.filter(opt => 
-        (opt.site_name || opt.clinic_name || '').toLowerCase().includes(search.toLowerCase())
+        (opt[labelKey] || '').toLowerCase().includes(search.toLowerCase())
     );
 
     useEffect(() => {
@@ -61,8 +71,9 @@ const MultiSelectDropdown = ({ label, options = [], selected = [], onChange, pla
                     <div className="overflow-y-auto">
                         {filteredOptions.length > 0 ? (
                             filteredOptions.map(opt => {
-                                const id = opt.site_id || opt.clinic_id;
-                                const name = opt.site_name || opt.clinic_name;
+                                // Dynamically access the correct keys
+                                const id = opt[idKey];
+                                const name = opt[labelKey];
                                 return (
                                     <div 
                                         key={id}
@@ -101,67 +112,46 @@ const UserManagement = () => {
         role: 'Clinician', gender: 'Male', siteIds: [], clinicIds: []
     });
 
-    // 1. Initial Load: Fetch Users and available Sites
     useEffect(() => {
         if (token) fetchInitialData();
     }, [token]);
 
-    // 2. DEPENDENT DROPDOWN LOGIC: Fetch clinics when site selection changes
-    // Replace your existing useEffect for clinics with this:
-useEffect(() => {
-    const controller = new AbortController();
-
-    const fetchFilteredClinics = async () => {
-        if (!token) return;
-        
-        // 1. Check if siteIds exists and has length
-        if (!formData.siteIds || !Array.isArray(formData.siteIds) || formData.siteIds.length === 0) {
-            setClinics([]);
-            setFormData(prev => ({ ...prev, clinicIds: [] }));
-            return;
-        }
-
-        setLoadingClinics(true);
-        try {
-            const config = { 
-                headers: { Authorization: `Bearer ${token}` },
-                signal: controller.signal 
-            };
-
-            // 2. Ensure we only send valid strings
-            const cleanIds = formData.siteIds.filter(id => id && typeof id === 'string');
-            const siteIdsParam = cleanIds.join(',');
-            
-            if (!siteIdsParam) {
-                setLoadingClinics(false);
+    useEffect(() => {
+        const controller = new AbortController();
+        const fetchFilteredClinics = async () => {
+            if (!token) return;
+            if (!formData.siteIds || formData.siteIds.length === 0) {
+                setClinics([]);
+                setFormData(prev => ({ ...prev, clinicIds: [] }));
                 return;
             }
 
-            const response = await axios.get(`http://localhost:5000/api/users/clinics?siteIds=${siteIdsParam}`, config);
-            
-            // 3. Update state with returned data
-            const fetchedClinics = response.data || [];
-            setClinics(fetchedClinics);
+            setLoadingClinics(true);
+            try {
+                const config = { 
+                    headers: { Authorization: `Bearer ${token}` },
+                    signal: controller.signal 
+                };
+                const siteIdsParam = formData.siteIds.join(',');
+                const response = await axios.get(`http://localhost:5000/api/users/clinics?siteIds=${siteIdsParam}`, config);
+                const fetchedClinics = response.data || [];
+                setClinics(fetchedClinics);
 
-            // 4. Auto-remove clinics that no longer belong to selected sites
-            const validClinicIds = fetchedClinics.map(c => c.clinic_id);
-            setFormData(prev => ({
-                ...prev,
-                clinicIds: prev.clinicIds.filter(id => validClinicIds.includes(id))
-            }));
-        } catch (err) {
-            if (!axios.isCancel(err)) {
-                console.error("Error fetching filtered clinics", err);
-                setClinics([]);
+                // Auto-unselect clinics that are no longer in the filtered list
+                const validClinicIds = fetchedClinics.map(c => c.clinic_id);
+                setFormData(prev => ({
+                    ...prev,
+                    clinicIds: prev.clinicIds.filter(id => validClinicIds.includes(id))
+                }));
+            } catch (err) {
+                if (!axios.isCancel(err)) setClinics([]);
+            } finally {
+                setLoadingClinics(false);
             }
-        } finally {
-            setLoadingClinics(false);
-        }
-    };
-
-    fetchFilteredClinics();
-    return () => controller.abort(); 
-}, [formData.siteIds, token]);
+        };
+        fetchFilteredClinics();
+        return () => controller.abort(); 
+    }, [formData.siteIds, token]);
 
     const fetchInitialData = async () => {
         setLoading(true);
@@ -180,31 +170,27 @@ useEffect(() => {
         }
     };
 
+    const handleToggleStatus = async (userId, currentStatus) => {
+        const newStatus = currentStatus === 'active' ? 'deactive' : 'active';
+        const confirmMsg = `Are you sure you want to ${newStatus === 'active' ? 're-activate' : 'deactivate'} this user?`;
+        
+        if (!window.confirm(confirmMsg)) return;
+
+        try {
+            const config = { headers: { Authorization: `Bearer ${token}` } };
+            await axios.patch(`http://localhost:5000/api/users/${userId}/status`, { status: newStatus }, config);
+            setUsers(users.map(u => u.id === userId ? { ...u, status: newStatus } : u));
+        } catch (err) {
+            alert("Failed to update user status.");
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
             const config = { headers: { Authorization: `Bearer ${token}` } };
-            
-            // Filter clinicIds to only include valid clinics that belong to selected sites
-            const validClinicIds = formData.clinicIds.filter(id => 
-                clinics.some(c => c.clinic_id === id)
-            );
-            
-            // Filter siteIds to only include valid sites
-            const validSiteIds = formData.siteIds.filter(id => 
-                sites.some(s => s.site_id === id)
-            );
-            
-            const submitData = {
-                ...formData,
-                siteIds: validSiteIds,
-                clinicIds: validClinicIds
-            };
-            
-            await axios.post('http://localhost:5000/api/users', submitData, config);
+            await axios.post('http://localhost:5000/api/users', formData, config);
             alert("User Created Successfully");
-            
-            // Reset Form
             setFormData({ 
                 suffix: '', firstName: '', lastName: '', email: '', password: '', 
                 role: 'Clinician', gender: 'Male', siteIds: [], clinicIds: []
@@ -218,7 +204,6 @@ useEffect(() => {
 
     return (
         <div className="p-8 bg-gray-50 min-h-screen">
-            {/* Tab Navigation */}
             <div className="flex gap-4 mb-8 bg-white p-2 rounded-2xl shadow-sm w-fit">
                 <button 
                     onClick={() => setActiveTab('list')} 
@@ -243,30 +228,47 @@ useEffect(() => {
                                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">Role & Gender</th>
                                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">Assigned Locations</th>
                                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase text-center">Status</th>
+                                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50">
                             {users.map(user => (
-                                <tr key={user.id} className="hover:bg-gray-50/50 transition-colors">
+                                <tr key={user.id} className={`hover:bg-gray-50/50 transition-colors ${user.status === 'deactive' ? 'bg-gray-50/50' : ''}`}>
                                     <td className="px-6 py-4">
-                                        <div className="font-bold text-gray-900">{user.suffix} {user.first_name} {user.last_name}</div>
+                                        <div className={`font-bold ${user.status === 'deactive' ? 'text-gray-400 line-through' : 'text-gray-900'}`}>
+                                            {user.suffix} {user.first_name} {user.last_name}
+                                        </div>
                                         <div className="text-xs text-gray-500">{user.email}</div>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <span className="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-bold mr-2">{user.role}</span>
+                                        <span className={`px-3 py-1 rounded-full text-xs font-bold mr-2 ${user.status === 'deactive' ? 'bg-gray-100 text-gray-400' : 'bg-indigo-50 text-indigo-700'}`}>
+                                            {user.role}
+                                        </span>
                                         <span className="text-gray-400 text-xs italic">{user.gender}</span>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <div className="flex flex-wrap gap-1">
+                                        <div className={`flex flex-wrap gap-1 ${user.status === 'deactive' ? 'opacity-40' : ''}`}>
                                             {user.sites?.map(s => <span key={s.site_id} className="px-2 py-0.5 bg-green-50 text-green-700 rounded text-[10px] font-medium border border-green-100">{s.site_name}</span>)}
                                             {user.clinics?.map(c => <span key={c.clinic_id} className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded text-[10px] font-medium border border-blue-100">{c.clinic_name}</span>)}
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 text-center">
-                                        <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-bold">
-                                            <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
-                                            {user.status}
+                                        <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${user.status === 'active' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
+                                            <div className={`w-1.5 h-1.5 rounded-full ${user.status === 'active' ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`}></div>
+                                            {user.status === 'active' ? 'Active' : 'Deactivated'}
                                         </div>
+                                    </td>
+                                    <td className="px-6 py-4 text-right">
+                                        <button 
+                                            onClick={() => handleToggleStatus(user.id, user.status)}
+                                            className={`p-2 rounded-xl border transition-all ${
+                                                user.status === 'active' 
+                                                ? 'text-rose-600 border-rose-100 hover:bg-rose-600 hover:text-white' 
+                                                : 'text-emerald-600 border-emerald-100 hover:bg-emerald-600 hover:text-white'
+                                            }`}
+                                        >
+                                            {user.status === 'active' ? <UserX size={18} /> : <UserCheck size={18} />}
+                                        </button>
                                     </td>
                                 </tr>
                             ))}
@@ -276,7 +278,6 @@ useEffect(() => {
             ) : (
                 <form onSubmit={handleSubmit} className="max-w-6xl mx-auto">
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        {/* Left Column: Personal Info */}
                         <div className="lg:col-span-2 bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
                             <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
                                 <User className="w-6 h-6 text-indigo-600" /> Basic Information
@@ -307,29 +308,32 @@ useEffect(() => {
                             </div>
                         </div>
 
-                        {/* Right Column: Access Management */}
                         <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 flex flex-col">
                             <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
                                 <Globe className="w-6 h-6 text-indigo-600" /> Access & Mappings
                             </h3>
                             
+                            {/* UPDATED DROPDOWNS WITH idKey AND labelKey */}
                             <MultiSelectDropdown 
                                 label="Assign Sites" 
                                 options={sites} 
+                                idKey="site_id"
+                                labelKey="site_name"
                                 selected={formData.siteIds} 
                                 onChange={ids => setFormData({...formData, siteIds: ids})}
                                 placeholder="Select Sites..."
                             />
-                            
                             <MultiSelectDropdown 
                                 label="Assign Clinics" 
                                 options={clinics} 
+                                idKey="clinic_id"
+                                labelKey="clinic_name"
                                 selected={formData.clinicIds} 
                                 onChange={ids => setFormData({...formData, clinicIds: ids})}
                                 placeholder={formData.siteIds.length === 0 ? "Select Sites first..." : "Select Clinics..."}
                                 loading={loadingClinics}
                             />
-                            
+
                             <div className="mt-auto pt-8">
                                 <button type="submit" className="w-full bg-indigo-600 text-white font-bold py-4 rounded-2xl shadow-lg hover:bg-indigo-700 transition-all flex items-center justify-center gap-2">
                                     <Plus className="w-5 h-5" /> Save User Profile

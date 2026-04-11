@@ -4,7 +4,7 @@ import axios from 'axios';
 // --- HELPER COMPONENTS ---
 const FilterItem = ({ label, children }) => (
     <div className="flex flex-col gap-1 bg-slate-50/50 p-2.5 rounded-lg border border-slate-100">
-        <label className="text-[11px] font-black text-black uppercase tracking-tighter">{label}</label>
+        <label className="text-[11px] font-black text-black uppercase tracking-tighter font-electronic-bold">{label}</label>
         {children}
     </div>
 );
@@ -14,7 +14,7 @@ const FilterSelect = ({ label, value, onChange, options }) => (
         <select 
             value={value} 
             onChange={(e) => onChange(e.target.value)}
-            className="bg-transparent border-none text-[13px] font-bold text-black outline-none cursor-pointer appearance-none w-full"
+            className="bg-transparent border-none text-[13px] font-bold text-black outline-none cursor-pointer appearance-none w-full font-electronic-bold"
         >
             {options && options.length > 0 ? (
                 options.map(opt => <option key={opt} value={opt}>{opt}</option>)
@@ -161,38 +161,61 @@ const GlobalFilterBar = ({ filters, setFilters, onSearch, isSearching, onDownloa
                     <button 
                         onClick={handleSearchClick}
                         disabled={isSearching}
-                        className="bg-emerald-600 text-white px-6 py-2 rounded-lg text-[12px] font-black uppercase tracking-wider hover:bg-emerald-700 disabled:opacity-50"
+                        className="bg-emerald-600 text-white px-6 py-2 rounded-lg text-[12px] font-black uppercase tracking-wider hover:bg-emerald-700 disabled:opacity-50 font-display-bold"
                     >
                         {isSearching ? 'Searching...' : 'Search'}
                     </button>
                     <button 
                         onClick={handleReset}
-                        className="bg-amber-500 text-white px-4 py-2 rounded-lg text-[12px] font-black uppercase hover:bg-amber-600"
+                        className="bg-amber-500 text-white px-4 py-2 rounded-lg text-[12px] font-black uppercase hover:bg-amber-600 font-display-bold"
                     >
                         Reset
                     </button>
-                    <button onClick={onDownloadPDF} className="bg-slate-900 text-white px-4 py-2 rounded-lg text-[12px] font-black uppercase">PDF</button>
-                    <button onClick={onDownloadCSV} className="bg-white border border-slate-200 text-black px-4 py-2 rounded-lg text-[12px] font-black uppercase">CSV</button>
+                    <button onClick={onDownloadPDF} className="bg-slate-900 text-white px-4 py-2 rounded-lg text-[12px] font-black uppercase font-display-bold">PDF</button>
+                    <button onClick={onDownloadCSV} className="bg-white border border-slate-200 text-black px-4 py-2 rounded-lg text-[12px] font-black uppercase font-display-bold">CSV</button>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-10 gap-3">
-                <FilterItem label="START DATE">
-                    <input type="date" value={draftFilters.startDate || ''} onChange={(e) => updateDraftFilter('startDate', e.target.value)} className="w-full bg-transparent outline-none text-[13px] font-bold text-slate-700" />
-                </FilterItem>
-                <FilterItem label="END DATE">
-                    <input type="date" value={draftFilters.endDate || ''} onChange={(e) => updateDraftFilter('endDate', e.target.value)} className="w-full bg-transparent outline-none text-[13px] font-bold text-slate-700" />
-                </FilterItem>
+            {/* Change the grid definition to allow for custom spans */}
+<div className="grid grid-cols-1 md:grid-cols-6 lg:grid-cols-16 gap-3">
+    
+    {/* Standard Size (1 Span) */}
+    <div className="lg:col-span-2">
+        <FilterItem label="START DATE">
+            <input type="date" value={draftFilters.startDate || ''} onChange={(e) => updateDraftFilter('startDate', e.target.value)} className="w-full bg-transparent outline-none text-[13px] font-bold text-slate-700 font-electronic-bold" />
+        </FilterItem>
+    </div>
+    <div className="lg:col-span-2">
+        <FilterItem label="END DATE">
+            <input type="date" value={draftFilters.endDate || ''} onChange={(e) => updateDraftFilter('endDate', e.target.value)} className="w-full bg-transparent outline-none text-[13px] font-bold text-slate-700 font-electronic-bold" />
+        </FilterItem>
+    </div>
 
-                <FilterSelect label="CONSULTANT" value={draftFilters.consultant} onChange={(v) => updateDraftFilter('consultant', v)} options={options.consultants} />
-                <FilterSelect label="SITE" value={draftFilters.site} onChange={(v) => updateDraftFilter('site', v)} options={options.sites} />
-                <FilterSelect label="CLINIC" value={draftFilters.clinic} onChange={(v) => updateDraftFilter('clinic', v)} options={options.clinics} />
-                <FilterSelect label="DIABETES" value={draftFilters.diabetes} onChange={(v) => updateDraftFilter('diabetes', v)} options={options.diabetes} />
-                <FilterSelect label="CONTROL" value={draftFilters.control} onChange={(v) => updateDraftFilter('control', v)} options={options.control} />
-                <FilterSelect label="CHOLESTEROL" value={draftFilters.cholesterol} onChange={(v) => updateDraftFilter('cholesterol', v)} options={options.cholesterol} />
-                <FilterSelect label="GENDER" value={draftFilters.gender} onChange={(v) => updateDraftFilter('gender', v)} options={options.gender} />
-                <FilterSelect label="AGE" value={draftFilters.age} onChange={(v) => updateDraftFilter('age', v)} options={options.age} />
-            </div>
+    {/* Increased Size (2 Spans each) */}
+    <div className="lg:col-span-2">
+        <FilterSelect label="CONSULTANT" value={draftFilters.consultant} onChange={(v) => updateDraftFilter('consultant', v)} options={options.consultants} />
+    </div>
+    <div className="lg:col-span-2">
+        <FilterSelect label="SITE" value={draftFilters.site} onChange={(v) => updateDraftFilter('site', v)} options={options.sites} />
+    </div>
+    <div className="lg:col-span-2">
+        <FilterSelect label="CLINIC" value={draftFilters.clinic} onChange={(v) => updateDraftFilter('clinic', v)} options={options.clinics} />
+    </div>
+
+    {/* Decreased/Standard Size (1 Span each) */}
+    <div className="lg:col-span-2">
+        <FilterSelect label="DIABETES" value={draftFilters.diabetes} onChange={(v) => updateDraftFilter('diabetes', v)} options={options.diabetes} />
+    </div>
+    <div className="lg:col-span-2">
+        <FilterSelect label="CONTROL" value={draftFilters.control} onChange={(v) => updateDraftFilter('control', v)} options={options.control} />
+    </div>
+    <div className="lg:col-span-1">
+        <FilterSelect label="GENDER" value={draftFilters.gender} onChange={(v) => updateDraftFilter('gender', v)} options={options.gender} />
+    </div>
+    <div className="lg:col-span-1">
+        <FilterSelect label="AGE" value={draftFilters.age} onChange={(v) => updateDraftFilter('age', v)} options={options.age} />
+    </div>
+</div>
         </div>
     );
 };

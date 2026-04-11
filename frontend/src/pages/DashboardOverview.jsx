@@ -54,15 +54,19 @@ const DashboardOverview = ({ filters }) => {
             {/* 1. AI Summary Section - Placed at the top for clinical visibility */}
             <AISummary 
                 dashboardData={{
-                    totalPatients: data.totalPatients || 0,
-                    diabeticCount: data.diabeticPopulation || 0,
-                    prevalence: data.prevalenceRate || 0,
-                    avgFrequency: data.avgFrequency || 0,
+                    // Map snake_case from API to camelCase for AISummary
+                    totalPatients: data.total_patients || data.totalPatients || 0,
+                    diabeticPopulation: data.diabetic_population || data.diabeticPopulation || 0,
+                    prevalenceRate: data.prevalence_rate || data.prevalenceRate || 0,
+                    avgFrequency: data.avg_frequency || data.avgFrequency || 0,
                     distribution: data.distribution || [],
                     consultants: data.consultants || [],
                     sites: data.sites || [],
                     demographics: data.demographics || {},
-                    labTrends: data.labTrends || []
+                    labTrends: data.labTrends || [],
+                    gender: data.gender || [],
+                    siteTrends: data.siteTrends || [],
+                    criticalCases: data.criticalCases || []
                 }} 
             />
 
@@ -84,3 +88,4 @@ const DashboardOverview = ({ filters }) => {
 };
 
 export default DashboardOverview;
+

@@ -204,7 +204,7 @@ const Dashboard = () => {
                         <button 
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
-                            className={`px-6 py-2 rounded-lg text-[12px] tracking-widest font-black transition-all ${
+                            className={`px-6 py-2 rounded-lg text-[12px] tracking-widest font-black transition-all font-display-bold ${
                                 activeTab === tab.id 
                                 ? 'bg-indigo-600 text-white shadow-md' 
                                 : 'text-slate-400 hover:text-slate-600'
@@ -274,3 +274,4 @@ const App = () => {
 };
 
 export default App;
+

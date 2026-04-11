@@ -7,6 +7,7 @@ import {
     getAllClinics,
     createUser,
     createSite,
+    toggleUserStatus,
     getAllUsersWithMappings
 } from '../controllers/userController.js';
 import { authenticate } from '../middleware/authMiddleware.js';
@@ -37,5 +38,8 @@ router.post('/', authenticate, authorize(['Administrator']), createUser);
 
 // POST /api/users/sites - Create new site in Site Master (Admin only)
 router.post('/sites', authenticate, authorize(['Administrator']), createSite);
+
+// Add this to your existing routes
+router.patch('/:id/status', authenticate, authorize(['Administrator']), toggleUserStatus);
 
 export default router;

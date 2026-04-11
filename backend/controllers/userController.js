@@ -270,6 +270,30 @@ export const createSite = async (req, res) => {
     }
 };
 
+export const toggleUserStatus = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body; // Expecting 'active' or 'deactive'
+        
+        const result = await pool.query(
+            `UPDATE users SET status = $1 WHERE id = $2 RETURNING id, email, status`,
+            [status, id]
+        );
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        
+        res.json({ 
+            message: `User status updated to ${status}`, 
+            user: result.rows[0] 
+        });
+    } catch (error) {
+        console.error('Toggle status error:', error);
+        res.status(500).json({ message: 'Error updating user status' });
+    }
+};
+
 export default { 
     register, 
     getAllUsers, 
@@ -279,5 +303,6 @@ export default {
     getAllClinics, 
     getPendingUsers, 
     approveUser, 
-    createSite 
+    createSite,
+    toggleUserStatus
 };

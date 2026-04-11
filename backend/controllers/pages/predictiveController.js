@@ -43,22 +43,24 @@ export const generatePrognosis = async (req, res) => {
         const allottedSites = await getUserAllottedSites(userId, userRole);
         
         // For non-admin users, verify the patient belongs to their allotted sites
-        if (allottedSites && allottedSites.length > 0) {
-            const patientCheck = await db.query(
-                `SELECT sm.site_name 
-                 FROM public.patient_master p
-                 JOIN public.lab_order lo ON p.patient_id = lo."PatientID"
-                 JOIN public.provider_master pr ON lo."OrderedBy" = pr.provider_id
-                 JOIN public.clinic_master cm ON pr.clinic_id = cm.clinic_id
-                 JOIN public.site_master sm ON cm.site_id = sm.site_id
-                 WHERE p.patient_id = $1 AND sm.site_name IN (${allottedSites.map((_, i) => `${i + 2}`).join(', ')})`,
-                [patientId, ...allottedSites]
-            );
-            
-            if (patientCheck.rows.length === 0) {
-                return res.status(403).json({ error: "Access denied: Patient not in your allotted sites" });
-            }
-        }
+        // For non-admin users, verify the patient belongs to their allotted sites
+if (allottedSites && allottedSites.length > 0) {
+    const patientCheck = await db.query(
+        `SELECT sm.site_name 
+         FROM public.patient_master p
+         JOIN public.lab_order lo ON p.patient_id = lo."PatientID"
+         JOIN public.provider_master pr ON lo."OrderedBy" = pr.provider_id
+         JOIN public.clinic_master cm ON pr.clinic_id = cm.clinic_id
+         JOIN public.site_master sm ON cm.site_id = sm.site_id
+         WHERE p.patient_id::text = $1::text 
+         AND sm.site_name = ANY($2::text[])`, 
+        [patientId, allottedSites] // Pass the array directly as $2
+    );
+    
+    if (patientCheck.rows.length === 0) {
+        return res.status(403).json({ error: "Access denied: Patient not in your allotted sites" });
+    }
+}
 
         console.log("Generating prognosis for patient:", patientId);
 

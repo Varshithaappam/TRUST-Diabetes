@@ -10,13 +10,22 @@ export const generateAIAnalysis = async (req, res) => {
 
         const { dashboardData } = req.body;
 
-        // Extract data from dashboard metrics - support both camelCase and snake_case
-        const totalPatients = dashboardData?.total_patients || dashboardData?.totalPatients || 0;
-        const diabeticPopulation = dashboardData?.diabetic_population || dashboardData?.diabeticPopulation || 0;
-        const prevalenceRate = dashboardData?.prevalence_rate || dashboardData?.prevalenceRate || 0;
-        const avgFrequency = dashboardData?.avg_frequency || dashboardData?.avgFrequency || 0;
+        // Debug: Log what we received
+        console.log('=== AI Controller Debug ===');
+        console.log('Received dashboardData:', JSON.stringify(dashboardData, null, 2));
+
+        // Validate we have data to analyze
+        if (!dashboardData) {
+            return res.status(400).json({ error: "Missing dashboard data. Please refresh the dashboard and try again." });
+        }
+
+        const totalPatients = dashboardData?.total_patients ?? dashboardData?.totalPatients ?? 0;
+        const diabeticPopulation = dashboardData?.diabetic_population ?? dashboardData?.diabeticPopulation ?? 0;
+        const prevalenceRate = dashboardData?.prevalence_rate ?? dashboardData?.prevalenceRate ?? 0;
+        const avgFrequency = dashboardData?.avg_frequency ?? dashboardData?.avgFrequency ?? 0;
         
-        
+        console.log('Extracted values:', { totalPatients, diabeticPopulation, prevalenceRate, avgFrequency });
+
         // Distribution data (control status)
         const distribution = dashboardData?.distribution || [];
         const controlled = distribution.find(d => d.status === 'CONTROLLED')?.cnt || 0;

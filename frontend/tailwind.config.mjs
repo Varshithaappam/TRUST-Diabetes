@@ -1,5 +1,5 @@
 ﻿/** @type {import('tailwindcss').Config} */
-module.exports = {
+export default {
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
@@ -12,13 +12,15 @@ module.exports = {
         'status-uncontrolled': '#EF4444',
       },
       fontFamily: {
-        'avenir': ['Avenir', 'Avenir Next', 'sans-serif'],
-        'avenir-black': ['Avenir Black', 'Avenir', 'sans-serif'],
-        'avenir-medium': ['Avenir Medium', 'Avenir', 'sans-serif'],
-        'avenir-roman': ['Avenir Roman', 'Avenir', 'sans-serif'],
-        'noto-serif': ['Noto Serif', 'serif'],
-        'sans': ['Avenir', 'Avenir Next', 'sans-serif'],
+        // PDF Section 1.1: Primary font for Web/Electronic Media
+        'serif': ['"Noto Serif"', 'serif'],
+        // PDF Section 1.1: Primary font for Display/Stationery
+        'display': ['Avenir', 'Helvetica', 'Arial', 'sans-serif'],
       },
+      fontSize: {
+        // Adding a specific brand size utility
+        'brand': '11pt',
+      }
     },
   },
   plugins: [],

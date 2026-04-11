@@ -72,12 +72,12 @@ const FrequencyCell = ({ patientId }) => {
         getFreq();
     }, [patientId]);
 
-    return <span className="font-black text-indigo-600 text-[13px] font-avenir-black">{freq}</span>;
+    return <span className="font-black text-indigo-600 text-[13px] font-display-black">{freq}</span>;
 };
 
 // --- HELPER COMPONENT: Cholesterol Badge ---
 const CholesterolBadge = ({ value }) => {
-    if (!value) return <span className="text-black font-bold font-avenir-medium">--</span>;
+    if (!value) return <span className="text-black font-bold font-display-medium">--</span>;
     const num = parseFloat(value);
     let label = "NORMAL";
     let style = "bg-emerald-50 text-emerald-600 border-emerald-100";
@@ -86,7 +86,7 @@ const CholesterolBadge = ({ value }) => {
     else if (num >= 200) { label = "BORDERLINE"; style = "bg-amber-50 text-amber-600 border-amber-100"; }
     
     return (
-        <span className={`px-2 py-0.5 rounded-lg border text-[11px] font-black uppercase font-avenir-black ${style}`}>
+        <span className={`px-2 py-0.5 rounded-lg border text-[11px] font-black uppercase font-display-black ${style}`}>
             {label} ({num})
         </span>
     );
@@ -100,7 +100,7 @@ const StatusBadge = ({ status }) => {
         'UNCONTROLLED': 'bg-rose-50 text-rose-600 border-rose-100'
     };
     return (
-        <span className={`px-2 py-0.5 rounded-lg border text-[11px] font-black uppercase tracking-tighter font-avenir-black ${styles[status] || 'bg-slate-50 text-black border-slate-100'}`}>
+        <span className={`px-2 py-0.5 rounded-lg border text-[11px] font-black uppercase tracking-tighter font-electronic-bold ${styles[status] || 'bg-slate-50 text-black border-slate-100'}`}>
             {status || 'N/A'}
         </span>
     );
@@ -124,8 +124,8 @@ const PatientDetailsModal = ({ history, onClose }) => {
             <div className="bg-white rounded-lg w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col shadow-lg shadow-indigo-100">
                 <div className="p-8 border-b flex justify-between items-start">
                     <div>
-                        <h2 className="text-2xl font-black text-medium font-avenir-medium">{latest.patient_name}</h2>
-                        <p className="text-black font-bold uppercase tracking-tight text-xs mt-1 font-avenir-medium">
+                        <h2 className="text-2xl font-black text-medium font-display-medium">{latest.patient_name}</h2>
+                        <p className="text-black font-bold uppercase tracking-tight text-xs mt-1 font-display-medium">
                             {latest.UHID || 'UHID-REG'} • {latest.age}Y • {latest.gender_id === 'dc865974-eef7-41ce-bba8-54dd43035e55' ? 'M' : 'F'}
                         </p>
                     </div>
@@ -135,21 +135,21 @@ const PatientDetailsModal = ({ history, onClose }) => {
                 <div className="flex-1 overflow-y-auto p-8">
                     <div className="grid grid-cols-4 gap-8 mb-10">
                         <div>
-                            <p className="text-[12px] font-bold text-black uppercase mb-1 font-avenir-medium">Clinic / Site</p>
-                            <p className="font-bold text-black leading-tight font-avenir-medium">
+                            <p className="text-[12px] font-bold text-black uppercase mb-1 font-display-medium">Clinic / Site</p>
+                            <p className="font-bold text-black leading-tight font-display-medium">
                                 {latest.site_name || 'N/A'} <br/> 
                                 <span className="text-[12px] text-indigo-500">{latest.clinic_name || 'Private Consultation'}</span>
                             </p>
                         </div>
-                        <div><p className="text-[12px] font-bold text-black uppercase mb-1 font-avenir-medium">Diagnosis</p>
-                            <span className={`px-2 py-0.5 rounded-lg border text-[12px] font-black font-avenir-black ${getDiagnosis(latest.hba1c).style}`}>{getDiagnosis(latest.hba1c).label}</span>
+                        <div><p className="text-[12px] font-bold text-black uppercase mb-1 font-display-medium">Diagnosis</p>
+                            <span className={`px-2 py-0.5 rounded-lg border text-[12px] font-black font-display-bold ${getDiagnosis(latest.hba1c).style}`}>{getDiagnosis(latest.hba1c).label}</span>
                         </div>
                         <div>
-                            <p className="text-[12px] font-bold text-black uppercase mb-1 font-avenir-medium">Control Status</p>
+                            <p className="text-[12px] font-bold text-black uppercase mb-1 font-display-medium">Control Status</p>
                             <StatusBadge status={latest.control_status} />
                         </div>
                         <div>
-                            <p className="text-[12px] font-bold text-black uppercase mb-1 font-avenir-medium">Total Cholesterol</p>
+                            <p className="text-[12px] font-bold text-black uppercase mb-1 font-display-medium">Total Cholesterol</p>
                             <CholesterolBadge value={latest.cholesterol} />
                         </div>
                     </div>
@@ -173,7 +173,7 @@ const PatientDetailsModal = ({ history, onClose }) => {
                     </div>
 
                     <table className="w-full text-left">
-                        <thead className="bg-slate-50/50 border-b text-[12px] font-bold text-black uppercase tracking-widest font-avenir-medium">
+                        <thead className="bg-slate-50/50 border-b text-[12px] font-bold text-black uppercase tracking-widest font-electronic-regular">
                             <tr>
                                 <th className="pb-4">Date / Facility</th>
                                 <th className="pb-4">Consultant</th>
@@ -187,19 +187,19 @@ const PatientDetailsModal = ({ history, onClose }) => {
                             {history.map((visit, idx) => (
                                 <tr key={idx} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
                                     <td className="py-4">
-                                        <div className="font-bold font-avenir-medium">{new Date(visit.visit_date).toLocaleDateString()}</div>
-                                        <div className="text-[11px] text-black font-medium uppercase tracking-tighter font-avenir-medium">
+                                        <div className="font-bold font-display-medium">{new Date(visit.visit_date).toLocaleDateString()}</div>
+                                        <div className="text-[11px] text-black font-medium uppercase tracking-tighter font-display-medium">
                                             {visit.site_name} | {visit.clinic_name}
                                         </div>
                                     </td>
-                                    <td className="py-4 text-black font-medium font-avenir-medium">{visit.provider_name}</td>
-                                    <td className="py-4 text-center font-medium font-avenir-medium">{visit.hba1c ? `${visit.hba1c}%` : '--'}</td>
+                                    <td className="py-4 text-black font-medium font-display-medium">{visit.provider_name}</td>
+                                    <td className="py-4 text-center font-medium font-display-medium">{visit.hba1c ? `${visit.hba1c}%` : '--'}</td>
                                     {/* Glucose Column */}
-                                    <td className="py-4 text-center font-medium font-avenir-medium">
+                                    <td className="py-4 text-center font-medium font-display-medium">
                                         {visit.fbs || '--'} / {visit.ppbs || '--'}
                                     </td>
-                                    <td className="py-4 text-center font-medium font-avenir-medium">{visit.ldl || '--'} / {visit.hdl || '--'}</td>
-                                    <td className="py-4 font-medium font-avenir-medium">{visit.cholesterol || '--'} / {visit.tg || '--'}</td>
+                                    <td className="py-4 text-center font-medium font-display-medium">{visit.ldl || '--'} / {visit.hdl || '--'}</td>
+                                    <td className="py-4 font-medium font-display-medium">{visit.cholesterol || '--'} / {visit.tg || '--'}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -254,22 +254,22 @@ const PatientRegistry = ({ filters: externalFilters }) => {
         }
     };
 
-    if (loading) return <div className="flex items-center justify-center min-h-screen font-black text-black uppercase text-[12px] tracking-widest font-avenir-black">Initialising Registry...</div>;
+    if (loading) return <div className="flex items-center justify-center min-h-screen font-black text-black uppercase text-[12px] tracking-widest font-electronic-bold">Initialising Registry...</div>;
 
     return (
-        <div className="bg-[#F9FAFB] min-h-screen font-avenir text-black">
+        <div className="bg-[#F9FAFB] min-h-screen font-electronic-regular text-black">
             <main className="max-w-[98%] mx-auto py-8 px-4">
                 <div className="bg-white rounded-lg shadow-lg shadow-indigo-100 border border-slate-200 overflow-hidden">
                     <div className="p-6 border-b flex justify-between items-center bg-white">
-                        <h2 className="font-black text-xs text-black uppercase tracking-wider font-avenir-black">Patient Master Registry</h2>
-                        <span className="bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-tighter font-avenir-black">
+                        <h2 className="font-black text-xs text-black uppercase tracking-wider font-electronic-bold">Patient Master Registry</h2>
+                        <span className="bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-tighter font-electronic-bold">
                              Records: {patients.length}
                         </span>
                     </div>
                     
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse min-w-[1300px]">
-                            <thead className="bg-slate-50/50 border-b text-[12px] font-bold text-black uppercase tracking-widest font-avenir-medium">
+                            <thead className="bg-slate-50/50 border-b text-[12px] font-bold text-black uppercase tracking-widest font-electronic-regular">
                                 <tr>
                                     <th className="px-6 py-5 w-[18%]">Patient Name</th>
                                     <th className="px-4 py-5 w-[12%]">Visit Date / Consultant</th>
@@ -289,25 +289,25 @@ const PatientRegistry = ({ filters: externalFilters }) => {
                                     return (
                                         <tr key={i} className="hover:bg-slate-50/50 transition-colors">
                                             <td className="px-6 py-5">
-                                                <div className="font-bold text-black leading-tight font-avenir-black">{p.patient_name}</div>
-                                                <div className="text-[12px] text-black mt-1 uppercase font-bold tracking-tighter font-avenir-medium">
+                                                <div className="font-bold text-black leading-tight font-electronic-bold">{p.patient_name}</div>
+                                                <div className="text-[12px] text-black mt-1 uppercase font-bold tracking-tighter font-electronic-regular">
                                                     {p.age}Y <span className="text-slate-200">|</span> {p.uhid_display || '---'}
                                                 </div>
                                             </td>
                                             <td className="px-4 py-5">
-                                                <div className="text-[13px] font-bold text-black font-avenir-medium"> 
+                                                <div className="text-[13px] font-bold text-black font-electronic-regular"> 
                                                     {new Date(p.latest_visit_date || p.visit_date).toLocaleDateString()}
                                                 </div>
-                                                <div className="text-[11px] text-indigo-500 mt-1 uppercase font-black tracking-tighter font-avenir-black">
+                                                <div className="text-[11px] text-indigo-500 mt-1 uppercase font-black tracking-tighter font-electronic-bold">
                                                     {p.provider_name || 'No Provider'}
                                                 </div>
                                             </td>
-                                            <td className="px-4 py-5 text-center font-medium text-black font-avenir-medium">{p.hba1c ? `${p.hba1c}%` : '--'}</td>
-                                            <td className="px-4 py-5 text-center font-medium text-black font-avenir-medium">{p.fbs ? p.fbs : '--'}</td>
+                                            <td className="px-4 py-5 text-center font-medium text-black font-electronic-regular">{p.hba1c ? `${p.hba1c}%` : '--'}</td>
+                                            <td className="px-4 py-5 text-center font-medium text-black font-electronic-regular">{p.fbs ? p.fbs : '--'}</td>
                                             <td className="px-4 py-5 text-center">
-                                                <span className={`px-2 py-0.5 rounded-lg border text-[11px] font-black font-avenir-black ${diag.style}`}>{diag.label}</span>
+                                                <span className={`px-2 py-0.5 rounded-lg border text-[11px] font-black font-electronic-bold ${diag.style}`}>{diag.label}</span>
                                             </td>
-                                            <td className="px-4 py-5 text-center font-medium text-black font-avenir-medium">{p.ldl || '--'}/{p.hdl || '--'}</td>
+                                            <td className="px-4 py-5 text-center font-medium text-black font-electronic-regular">{p.ldl || '--'}/{p.hdl || '--'}</td>
                                             <td className="px-4 py-5"><CholesterolBadge value={p.cholesterol} /></td>
                                             <td className="px-4 py-5 text-center">
                                                 <FrequencyCell patientId={p.patient_id} />
@@ -316,7 +316,7 @@ const PatientRegistry = ({ filters: externalFilters }) => {
                                             <td className="px-6 py-5 text-right">
                                                 <button 
                                                     onClick={() => handleOpenDetails(p.patient_id)} 
-                                                    className="text-indigo-600 font-black text-[12px] uppercase tracking-widest hover:text-indigo-800 font-avenir-black"
+                                                    className="text-indigo-600 font-black text-[12px] uppercase tracking-widest hover:text-indigo-800 font-electronic-bold"
                                                 >
                                                     Details
                                                 </button>
@@ -338,3 +338,5 @@ const PatientRegistry = ({ filters: externalFilters }) => {
 };
 
 export default PatientRegistry;
+
+

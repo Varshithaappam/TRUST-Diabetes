@@ -74,3 +74,4 @@ const RiskStratificationPie = ({ patients }) => {
 };
 
 export default RiskStratificationPie;
+

@@ -56,10 +56,10 @@ const Navbar = ({ activeTab, setActiveTab }) => {
                     className="w-15 h-15 object-contain"
                     />
                 <div>
-                    <h1 className="text-sm font-black text-slate-800 leading-none tracking-tighter font-avenir-black">
+                    <h1 className="text-sm font-black text-slate-800 leading-none tracking-tighter font-display-black">
                         TRUST <span className="text-indigo-600">Diabetes</span>
                     </h1>
-                    <p className="text-[16px] font-bold text-black uppercase tracking-widest mt-0.5 font-avenir-medium">
+                    <p className="text-[16px] font-bold text-black uppercase tracking-widest mt-0.5 font-display-medium">
                         Healthcare Registry
                     </p>
                 </div>
@@ -73,15 +73,15 @@ const Navbar = ({ activeTab, setActiveTab }) => {
                 <div className="text-right hidden sm:block">
                     <div className="flex items-center gap-2 justify-end">
                         {getRoleIcon()}
-                        <p className="text-[16px] font-black text-slate-800 leading-none font-avenir-black">{roleDisplay.label}</p>
+                        <p className="text-[16px] font-black text-slate-800 leading-none font-display-black">{roleDisplay.label}</p>
                     </div>
-                    <p className="text-[16px] font-bold text-black uppercase tracking-wider mt-1 font-avenir-medium">{roleDisplay.sub}</p>
+                    <p className="text-[16px] font-bold text-black uppercase tracking-wider mt-1 font-display-medium">{roleDisplay.sub}</p>
                 </div>
                 
                 {/* Logout Button */}
                 <button
                     onClick={handleLogout}
-                    className="flex items-center gap-2 px-3 py-2 bg-slate-100 hover:bg-red-50 text-black hover:text-red-600 rounded-lg transition-colors group font-avenir-medium"
+                    className="flex items-center gap-2 px-3 py-2 bg-slate-100 hover:bg-red-50 text-black hover:text-red-600 rounded-lg transition-colors group font-display-medium"
                     title="Logout"
                 >
                     <LogOut className="w-4 h-4" />
@@ -97,3 +97,5 @@ const Navbar = ({ activeTab, setActiveTab }) => {
 };
 
 export default Navbar;
+
+

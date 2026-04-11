@@ -3,12 +3,12 @@ import React, { useState, useEffect } from 'react';
 const StatCard = ({ title, value, icon, color, subText }) => (
     <div className="bg-white p-5 rounded-lg border border-slate-100 shadow-lg shadow-indigo-100 flex flex-col justify-between hover:shadow-md transition-all">
         <div className="flex justify-between items-start">
-            <span className="text-[12px] font-bold text-black uppercase tracking-widest font-avenir-medium">{title}</span>
+            <span className="text-[12px] font-bold text-black uppercase tracking-widest font-display-medium">{title}</span>
             <span className="text-xl opacity-80">{icon}</span>
         </div>
         <div className="mt-2">
-            <div className={`text-3xl font-black tracking-tight font-avenir-black ${color}`}>{value}</div>
-            {subText && <div className="text-[12px] text-black font-bold mt-1 uppercase tracking-tighter font-avenir-medium">{subText}</div>}
+            <div className={`text-3xl font-black tracking-tight font-display-black ${color}`}>{value}</div>
+            {subText && <div className="text-[12px] text-black font-bold mt-1 uppercase tracking-tighter font-display-medium">{subText}</div>}
         </div>
     </div>
 );
@@ -116,3 +116,4 @@ const SummaryCards = ({ filters }) => {
 };
 
 export default SummaryCards;
+
