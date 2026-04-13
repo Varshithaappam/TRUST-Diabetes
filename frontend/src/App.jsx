@@ -9,6 +9,7 @@ import PredictiveDashboard from './pages/PredictiveDashboard';
 import AIAnalyst from './components/AIAnalyst';
 import UserManagement from './pages/UserManagement';
 import Login from './pages/Login';
+import ProfileSettings from './pages/ProfileSettings';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoutes';
 import { fetchRegistry } from './services/api';
@@ -261,6 +262,15 @@ const App = () => {
                         element={
                             <ProtectedRoute>
                                 <Dashboard />
+                            </ProtectedRoute>
+                        } 
+                    />
+                    
+                    <Route 
+                        path="/profile" 
+                        element={
+                            <ProtectedRoute>
+                                <ProfileSettings />
                             </ProtectedRoute>
                         } 
                     />

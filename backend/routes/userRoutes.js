@@ -4,11 +4,18 @@ import {
     getAllUsers, 
     approveUser,
     getAllSites,
+    getAllSpecialties,
+    getAllHospitals,
+    addHospital,
     getAllClinics,
     createUser,
     createSite,
     toggleUserStatus,
-    getAllUsersWithMappings
+    getAllUsersWithMappings,
+    addSite,
+    addClinic,
+    getUserProfile,
+    updateUserProfile
 } from '../controllers/userController.js';
 import { authenticate } from '../middleware/authMiddleware.js';
 import { authorize } from '../middleware/authMiddleware.js';
@@ -33,6 +40,15 @@ router.get('/sites', authenticate, authorize(['Administrator']), getAllSites);
 // GET /api/users/clinics - Get all clinics for dropdown (Admin only)
 router.get('/clinics', authenticate, authorize(['Administrator']), getAllClinics);
 
+// GET /api/users/specialties - Get all specialties for dropdown (Admin only)
+router.get('/specialties', authenticate, authorize(['Administrator']), getAllSpecialties);
+
+// GET /api/users/hospitals - Get all hospitals for dropdown (Admin only)
+router.get('/hospitals', authenticate, authorize(['Administrator']), getAllHospitals);
+
+// POST /api/users/add-hospital - Add new hospital (Admin only)
+router.post('/add-hospital', authenticate, authorize(['Administrator']), addHospital);
+
 // POST /api/users - Create new user with site/clinic mappings (Admin only)
 router.post('/', authenticate, authorize(['Administrator']), createUser);
 
@@ -41,5 +57,14 @@ router.post('/sites', authenticate, authorize(['Administrator']), createSite);
 
 // Add this to your existing routes
 router.patch('/:id/status', authenticate, authorize(['Administrator']), toggleUserStatus);
+
+router.post('/add-site', authenticate, authorize(['Administrator']), addSite);
+router.post('/add-clinic', authenticate, authorize(['Administrator']), addClinic);
+
+// GET /api/users/profile - Get current user's profile (any authenticated user)
+router.get('/profile', authenticate, getUserProfile);
+
+// PUT /api/users/profile - Update current user's profile (any authenticated user)
+router.put('/profile', authenticate, updateUserProfile);
 
 export default router;

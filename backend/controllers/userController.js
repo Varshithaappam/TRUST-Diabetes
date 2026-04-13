@@ -183,7 +183,50 @@ export const getAllSites = async (req, res) => {
 };
 
 /**
- * 5. GET CLINICS BY SITES
+ * 5. GET ALL SPECIALTIES
+ * Returns all specialities from specialty_master
+ */
+export const getAllSpecialties = async (req, res) => {
+    try {
+        const result = await pool.query('SELECT specialty_id, specialty_name FROM specialty_master ORDER BY specialty_name');
+        res.json(result.rows);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching specialties' });
+    }
+};
+
+/**
+ * 6. GET ALL HOSPITALS
+ * Returns all hospitals from hospital_master
+ */
+export const getAllHospitals = async (req, res) => {
+    try {
+        const result = await pool.query('SELECT hospital_id, hospital_name FROM hospital_master ORDER BY hospital_name');
+        res.json(result.rows);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching hospitals' });
+    }
+};
+
+/**
+ * 7. ADD HOSPITAL
+ */
+export const addHospital = async (req, res) => {
+    const { hospital_name, hospital_code, hospital_address, phone_number, contact_person_name, contact_person_email, is_active } = req.body;
+    try {
+        const result = await pool.query(
+            `INSERT INTO public.hospital_master (hospital_name, hospital_code, hospital_address, phone_number, contact_person_name, contact_person_email, is_active) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+            [hospital_name, hospital_code, hospital_address, phone_number, contact_person_name, contact_person_email, is_active ?? true]
+        );
+        res.status(201).json(result.rows[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+/**
+ * 6. GET CLINICS BY SITES
  * Dynamically filters clinics based on the sites selected in the frontend
  */
 export const getAllClinics = async (req, res) => {
@@ -293,6 +336,96 @@ export const toggleUserStatus = async (req, res) => {
         res.status(500).json({ message: 'Error updating user status' });
     }
 };
+export const addSite = async (req, res) => {
+    const { site_name, site_address, hospital_id, phone_number, contact_person_name, contact_person_email, is_active } = req.body;
+    try {
+        const result = await pool.query(
+            `INSERT INTO public.site_master (site_name, site_address, hospital_id, phone_number, contact_person_name, contact_person_email, is_active) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+            [site_name, site_address, hospital_id, phone_number, contact_person_name, contact_person_email, is_active ?? true]
+        );
+        res.status(201).json(result.rows[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+// 5. ADD CLINIC
+export const addClinic = async (req, res) => {
+    const { clinic_name, clinic_address, site_id, specialty_id, speciality_name, phone_number, contact_person_name, contact_person_email, is_active } = req.body;
+    try {
+        // If specialty_id is provided, get the specialty_name
+        let specName = speciality_name || 'General';
+        if (specialty_id) {
+            const specResult = await pool.query('SELECT specialty_name FROM public.specialty_master WHERE specialty_id = $1', [specialty_id]);
+            specName = specResult.rows[0]?.specialty_name || specName;
+        }
+
+        const result = await pool.query(
+            `INSERT INTO public.clinic_master (clinic_name, clinic_address, site_id, specialty_id, speciality_name, phone_number, contact_person_name, contact_person_email, is_active) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+            [clinic_name, clinic_address, site_id, specialty_id, specName, phone_number, contact_person_name, contact_person_email, is_active ?? true]
+        );
+        res.status(201).json(result.rows[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+// 6. GET USER PROFILE - Get current user's profile
+export const getUserProfile = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const result = await pool.query(
+            `SELECT id, email, suffix, first_name, last_name, gender, role, status, created_at, updated_at 
+             FROM users WHERE id = $1`,
+            [userId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        res.json({ user: result.rows[0] });
+    } catch (error) {
+        console.error('Get profile error:', error);
+        res.status(500).json({ message: 'Error fetching user profile' });
+    }
+};
+
+// 7. UPDATE USER PROFILE - Update current user's profile
+export const updateUserProfile = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { suffix, first_name, last_name, gender } = req.body;
+
+        // Validation
+        if (!first_name || !last_name) {
+            return res.status(400).json({ message: 'First name and last name are required' });
+        }
+
+        const result = await pool.query(
+            `UPDATE users 
+             SET suffix = COALESCE($1, suffix), 
+                 first_name = $2, 
+                 last_name = $3, 
+                 gender = COALESCE($4, gender),
+                 updated_at = NOW()
+             WHERE id = $5 
+             RETURNING id, email, suffix, first_name, last_name, gender, role, status`,
+            [suffix, first_name, last_name, gender, userId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        res.json({ message: 'Profile updated successfully', user: result.rows[0] });
+    } catch (error) {
+        console.error('Update profile error:', error);
+        res.status(500).json({ message: 'Error updating user profile' });
+    }
+};
 
 export default { 
     register, 
@@ -300,9 +433,16 @@ export default {
     getAllUsersWithMappings, 
     createUser, 
     getAllSites, 
+    getAllSpecialties,
+    getAllHospitals,
+    addHospital,
     getAllClinics, 
     getPendingUsers, 
     approveUser, 
     createSite,
-    toggleUserStatus
+    toggleUserStatus,
+    addSite,
+    addClinic,
+    getUserProfile,
+    updateUserProfile
 };

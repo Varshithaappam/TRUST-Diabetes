@@ -117,6 +117,9 @@ CREATE TABLE IF NOT EXISTS public.clinic_master
     created_by uuid,
     updated_by uuid,
     phone_number text COLLATE pg_catalog."default",
+    contact_person_name text COLLATE pg_catalog."default",
+    contact_person_email text COLLATE pg_catalog."default",
+    speciality_name text COLLATE pg_catalog."default",
     CONSTRAINT clinic_master_pkey PRIMARY KEY (clinic_id)
 );
 
@@ -228,6 +231,9 @@ CREATE TABLE IF NOT EXISTS public.hospital_master
     updated_at timestamp with time zone DEFAULT now(),
     created_by uuid,
     updated_by uuid,
+    phone_number text COLLATE pg_catalog."default",
+    contact_person_name text COLLATE pg_catalog."default",
+    contact_person_email text COLLATE pg_catalog."default",
     CONSTRAINT hospital_master_pkey PRIMARY KEY (hospital_id),
     CONSTRAINT hospital_master_hospital_code_key UNIQUE (hospital_code)
 );

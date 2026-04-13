@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LogOut, Shield, BarChart3, Stethoscope } from 'lucide-react';
+import { LogOut, Shield, BarChart3, Stethoscope, User, Settings } from 'lucide-react';
 import logo from '../assets/logo.png';
 
 const Navbar = ({ activeTab, setActiveTab }) => {
@@ -46,6 +46,10 @@ const Navbar = ({ activeTab, setActiveTab }) => {
 
     const roleDisplay = getRoleDisplay();
 
+    const handleProfileClick = () => {
+        navigate('/profile');
+    };
+
     return (
         <nav className="bg-white border-b border-slate-100 px-8 py-4 flex items-center justify-between sticky top-0 z-50">
             {/* LOGO SECTION */}
@@ -88,8 +92,25 @@ const Navbar = ({ activeTab, setActiveTab }) => {
                     <span className="text-[18px] font-medium hidden md:inline">Logout</span>
                 </button>
                 
-                <div className="w-9 h-9 bg-slate-100 rounded-full border border-slate-200 flex items-center justify-center text-black">
+                <div className="w-9 h-9 bg-slate-100 rounded-full border border-slate-200 flex items-center justify-center text-black cursor-pointer hover:bg-indigo-50 hover:border-indigo-200 transition-colors relative group">
                     👤
+                    {/* Dropdown Menu */}
+                    <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                        <button
+                            onClick={handleProfileClick}
+                            className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 flex items-center gap-2 rounded-t-xl transition-colors"
+                        >
+                            <User className="w-4 h-4" />
+                            Account Settings
+                        </button>
+                        <button
+                            onClick={handleLogout}
+                            className="w-full px-4 py-3 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 rounded-b-xl transition-colors"
+                        >
+                            <LogOut className="w-4 h-4" />
+                            Logout
+                        </button>
+                    </div>
                 </div>
             </div>
         </nav>
