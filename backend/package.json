@@ -1,19 +1,18 @@
 {
-  "name": "trust-diabetes-app",
+  "name": "trust-diabetes-backend",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Server-side logic for the TRUST Diabetes Registry",
+  "main": "app.js",
+  "type": "module",
   "scripts": {
-    "start": "node backend/app.js",
-    "dev:server": "node --watch backend/app.js",
+    "start": "node app.js",
+    "dev": "node --watch app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "keywords": ["backend", "express", "postgresql", "nodemailer"],
   "author": "",
   "license": "ISC",
-  "type": "module",
   "dependencies": {
-    "@google/genai": "^1.45.0",
     "@google/generative-ai": "^0.24.1",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",

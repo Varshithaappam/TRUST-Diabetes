@@ -30,3 +30,18 @@ INSERT INTO users (email, password, name, role, status) VALUES
 ('analyst@trust.com', '$2b$10$vGk.DFwzSp/K6a8lz96wq.59zwI/HxCCFcdXnof6zuo2NU73HXPWG', 'Data Analyst', 'Analyst', 'active'),
 ('clinician@trust.com', '$2b$10$vGk.DFwzSp/K6a8lz96wq.59zwI/HxCCFcdXnof6zuo2NU73HXPWG', 'Dr. Clinician', 'Clinician', 'active')
 ON CONFLICT (email) DO NOTHING;
+
+-- Create password_reset_tokens table for forgot password functionality
+CREATE TABLE IF NOT EXISTS password_reset_tokens (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    token VARCHAR(255) UNIQUE NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create index on user_id for faster lookups
+CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_user_id ON password_reset_tokens(user_id);
+
+-- Create index on token for verification
+CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_token ON password_reset_tokens(token);

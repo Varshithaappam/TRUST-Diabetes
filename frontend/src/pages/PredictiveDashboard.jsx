@@ -60,6 +60,14 @@ const PredictiveDashboard = ({ filters }) => {
     const [patients, setPatients] = useState([]);
     const [loading, setLoading] = useState(true);
     const [loadingVisits, setLoadingVisits] = useState(false);
+    const [riskFilter, setRiskFilter] = useState(null);
+
+    // Reset all selections
+    const handleReset = () => {
+        setSelectedPatient(null);
+        setRiskFilter(null);
+        setPatientVisits([]);
+    };
 
     // Fetch all patients for risk scoring - now with filters
     useEffect(() => {
@@ -182,25 +190,40 @@ const PredictiveDashboard = ({ filters }) => {
 
     return (
         <div className="p-6 bg-slate-50 min-h-screen">
-            <div className="mb-8">
-                <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-                    <span className="p-2 bg-white rounded-full shadow-sm">🧠</span> 
-                    Predictive Risk Engine
-                </h1>
-                <p className="text-slate-500 mt-2 max-w-3xl">
-                    This module uses deterministic algorithms to stratify patient risk and 
-                    Generative AI to forecast individual health trajectories.
-                </p>
+            <div className="mb-8 flex justify-between items-start">
+                <div>
+                    <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                        <span className="p-2 bg-white rounded-full shadow-sm">🧠</span> 
+                        Predictive Risk Engine
+                    </h1>
+                    <p className="text-slate-500 mt-2 max-w-3xl">
+                        This module uses deterministic algorithms to stratify patient risk and 
+                        Generative AI to forecast individual health trajectories.
+                    </p>
+                </div>
+                {(riskFilter || selectedPatient) && (
+                    <button 
+                        onClick={handleReset}
+                        className="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg text-xs font-black uppercase hover:bg-slate-50 hover:text-red-500 transition-colors shadow-sm"
+                    >
+                        Reset Selection
+                    </button>
+                )}
             </div>
 
             <div className="grid grid-cols-12 gap-6">
                 {/* Left Column: Stats and List */}
                 <div className="col-span-12 lg:col-span-4 space-y-6">
-                    <RiskStratificationPie patients={scoredPatients} />
+                    <RiskStratificationPie 
+                        patients={scoredPatients} 
+                        onRiskFilterChange={setRiskFilter}
+                        activeRiskFilter={riskFilter}
+                    />
                     <HighRiskList 
                         onSelect={handleSelect} 
                         selectedId={selectedPatientId} 
-                        scoredPatients={scoredPatients} 
+                        scoredPatients={scoredPatients}
+                        riskFilter={riskFilter}
                     />
                 </div>
 

@@ -6,6 +6,7 @@ export const getUserAssignedSites = async (req, res) => {
         const userId = req.user?.id;
         const userRole = req.user?.role;
         
+        
         if (!userId) {
             return res.status(401).json({ message: 'User not authenticated' });
         }
@@ -101,14 +102,14 @@ export const getFilterOptions = async (req, res) => {
                 [userId]
             );
             
-            // Get clinics from the user's assigned sites
+            // Get clinics from BOTH direct assignments AND user's assigned sites
             clinicsQuery = pool.query(
                 `SELECT DISTINCT cm.clinic_name
-                 FROM clinic_master cm
-                 JOIN site_master sm ON cm.site_id = sm.site_id
-                 JOIN user_site_mapping usm ON sm.site_id = usm.site_id
-                 WHERE usm.user_id = $1 AND cm.clinic_name IS NOT NULL
-                 ORDER BY cm.clinic_name`,
+                FROM clinic_master cm
+                JOIN user_clinic_mapping ucm ON cm.clinic_id = ucm.clinic_id
+                WHERE ucm.user_id = $1
+                AND cm.clinic_name IS NOT NULL
+                ORDER BY cm.clinic_name`,
                 [userId]
             );
         }
@@ -140,6 +141,72 @@ export const getFilterOptions = async (req, res) => {
         });
     } catch (err) {
         console.error('Error fetching filter options:', err.message);
+        res.status(500).json({ error: 'Server Error', details: err.message });
+    }
+};
+
+// Get clinics filtered by selected site and user's permissions
+export const getClinicsBySite = async (req, res) => {
+    try {
+        const userId = req.user?.id;
+        const userRole = req.user?.role;
+        const { site } = req.query;
+        
+        if (!userId) {
+            return res.status(401).json({ message: 'User not authenticated' });
+        }
+        
+        if (!site) {
+            return res.status(400).json({ message: 'Site parameter is required' });
+        }
+        
+        // Get site_id from site_name
+        const siteResult = await pool.query(
+            'SELECT site_id FROM site_master WHERE site_name = $1',
+            [site]
+        );
+        
+        if (siteResult.rows.length === 0) {
+            return res.json({ clinics: [] });
+        }
+        
+        const siteId = siteResult.rows[0].site_id;
+        
+        let query;
+        let params;
+        
+        if (userRole === 'Administrator') {
+            // Admin sees all clinics in the selected site
+            query = `
+                SELECT clinic_name 
+                FROM clinic_master 
+                WHERE site_id = $1 AND clinic_name IS NOT NULL 
+                ORDER BY clinic_name
+            `;
+            params = [siteId];
+        } else {
+            // Analyst/Clinician sees only clinics that are:
+            // 1. In the selected site
+            // 2. Assigned to them via user_clinic_mapping
+            query = `
+                SELECT DISTINCT cm.clinic_name
+                FROM clinic_master cm
+                JOIN user_clinic_mapping ucm ON cm.clinic_id = ucm.clinic_id
+                WHERE cm.site_id = $1 
+                AND ucm.user_id = $2 
+                AND cm.clinic_name IS NOT NULL
+                ORDER BY cm.clinic_name
+            `;
+            params = [siteId, userId];
+        }
+        
+        const result = await pool.query(query, params);
+        
+        const clinics = result.rows.map(row => row.clinic_name);
+        
+        res.json({ clinics });
+    } catch (err) {
+        console.error('Error fetching clinics by site:', err.message);
         res.status(500).json({ error: 'Server Error', details: err.message });
     }
 };

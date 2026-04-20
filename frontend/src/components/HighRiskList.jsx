@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import React, { useMemo } from 'react';
 
 // Trend Icons
 const TrendingUpIcon = () => (
@@ -20,32 +19,56 @@ const StableIcon = () => (
     </svg>
 );
 
-const HighRiskList = ({ onSelect, selectedId, scoredPatients }) => {
-    // If scoredPatients is provided, use it directly; otherwise fetch high risk patients
-    const [candidates, setCandidates] = useState([]);
+// Filter Chip Component
+const FilterChip = ({ label, onRemove }) => (
+    <div className="flex items-center gap-1 bg-red-100 border border-red-300 px-2 py-1 rounded-full text-xs font-bold text-red-700">
+        <span>{label}</span>
+        <button onClick={onRemove} className="hover:bg-red-200 rounded-full w-4 h-4 flex items-center justify-center">×</button>
+    </div>
+);
 
-    useEffect(() => {
-        if (scoredPatients && scoredPatients.length > 0) {
-            setCandidates(scoredPatients);
-        } else {
-            // Fallback: Fetch only patients with HbA1c > 9.0 (High Risk)
-            const fetchHighRisk = async () => {
-                try {
-                    const res = await axios.get('/api/patients/registry?control=uncontrolled');
-                    setCandidates(res.data);
-                } catch (err) {
-                    console.error("Error fetching high risk list", err);
-                }
-            };
-            fetchHighRisk();
+const HighRiskList = ({ onSelect, selectedId, scoredPatients, riskFilter }) => {
+    // Filter patients based on riskFilter
+    const filteredCandidates = useMemo(() => {
+        if (!scoredPatients || scoredPatients.length === 0) {
+            return [];
         }
-    }, [scoredPatients]);
+        
+        // If no filter, show all patients sorted by risk
+        if (!riskFilter) {
+            return scoredPatients;
+        }
+        
+        // Filter by selected risk level
+        return scoredPatients.filter(p => p.riskLabel === riskFilter);
+    }, [scoredPatients, riskFilter]);
+
+    // Get title based on filter
+    const getTitle = () => {
+        if (riskFilter === 'High') return 'High Risk Candidates';
+        if (riskFilter === 'Medium') return 'Medium Risk Candidates';
+        if (riskFilter === 'Low') return 'Low Risk Candidates';
+        return 'High Risk Candidates';
+    };
 
     return (
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-            <div className="p-4 border-b border-slate-50">
-                <h3 className="font-bold text-slate-800 text-lg">High Risk Candidates</h3>
-                <p className="text-[12px] text-slate-400 uppercase font-bold">Sorted by Risk Score (High to Low)</p>
+            <div className="p-4 border-b border-slate-50 flex justify-between items-center">
+                <div>
+                    <h3 className="font-bold text-slate-800 text-lg">{getTitle()}</h3>
+                    <p className="text-[12px] text-slate-400 uppercase font-bold">
+                        {filteredCandidates.length} patient{filteredCandidates.length !== 1 ? 's' : ''}
+                        {riskFilter ? ` (filtered: ${riskFilter})` : ''}
+                    </p>
+                </div>
+                {riskFilter && (
+                    <button 
+                        onClick={() => onSelect(null)}
+                        className="text-xs font-black text-slate-400 hover:text-red-500 uppercase"
+                    >
+                        Clear Filter
+                    </button>
+                )}
             </div>
             
             <div className="max-h-[500px] overflow-y-auto">
@@ -59,7 +82,7 @@ const HighRiskList = ({ onSelect, selectedId, scoredPatients }) => {
                         </tr>
                     </thead>
                     <tbody>
-                        {candidates.slice(0, 50).map((p) => {
+                        {filteredCandidates.slice(0, 50).map((p) => {
                             // Handle both scored patients and regular patients
                             const patientId = p.patient_id || p.patientId || p.uhid;
                             const patientName = p.patient_name || p.name;
@@ -106,10 +129,14 @@ const HighRiskList = ({ onSelect, selectedId, scoredPatients }) => {
                         })}
                     </tbody>
                 </table>
+                {filteredCandidates.length === 0 && (
+                    <div className="p-8 text-center text-slate-400">
+                        No patients found for this risk level
+                    </div>
+                )}
             </div>
         </div>
     );
 };
 
 export default HighRiskList;
-

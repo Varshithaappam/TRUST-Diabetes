@@ -60,10 +60,11 @@ const Navbar = ({ activeTab, setActiveTab }) => {
                     className="w-15 h-15 object-contain"
                     />
                 <div>
-                    <h1 className="text-sm font-black text-slate-800 leading-none tracking-tighter font-display-black">
-                        TRUST <span className="text-indigo-600">Diabetes</span>
+                    <h1 className="text-sm font-black text-slate-800 leading-none tracking-tighter font-avenir">
+                        TRUST <span className="text-[#005FBE]">HealthCare</span>
                     </h1>
-                    <p className="text-[16px] font-bold text-black uppercase tracking-widest mt-0.5 font-display-medium">
+
+                    <p className="text-[16px] font-medium text-black uppercase tracking-widest mt-0.5 font-avenir">
                         Healthcare Registry
                     </p>
                 </div>
@@ -77,9 +78,9 @@ const Navbar = ({ activeTab, setActiveTab }) => {
                 <div className="text-right hidden sm:block">
                     <div className="flex items-center gap-2 justify-end">
                         {getRoleIcon()}
-                        <p className="text-[16px] font-black text-slate-800 leading-none font-display-black">{roleDisplay.label}</p>
+                        <p className="text-[16px] font-medium font-avenir hidden md:inline">{roleDisplay.label}</p>
                     </div>
-                    <p className="text-[16px] font-bold text-black uppercase tracking-wider mt-1 font-display-medium">{roleDisplay.sub}</p>
+                    <p className="text-[16px] font-medium font-avenir hidden md:inline">{roleDisplay.sub}</p>
                 </div>
                 
                 {/* Logout Button */}
@@ -89,27 +90,30 @@ const Navbar = ({ activeTab, setActiveTab }) => {
                     title="Logout"
                 >
                     <LogOut className="w-4 h-4" />
-                    <span className="text-[18px] font-medium hidden md:inline">Logout</span>
+                    <span className="text-[18px] font-medium font-avenir hidden md:inline">Logout</span>
                 </button>
                 
                 <div className="w-9 h-9 bg-slate-100 rounded-full border border-slate-200 flex items-center justify-center text-black cursor-pointer hover:bg-indigo-50 hover:border-indigo-200 transition-colors relative group">
                     👤
                     {/* Dropdown Menu */}
                     <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                        
                         <button
                             onClick={handleProfileClick}
-                            className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 flex items-center gap-2 rounded-t-xl transition-colors"
+                            className="w-full px-4 py-3 text-left text-sm font-medium font-avenir text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 flex items-center gap-2 rounded-t-xl transition-colors"
                         >
                             <User className="w-4 h-4" />
                             Account Settings
                         </button>
+
                         <button
                             onClick={handleLogout}
-                            className="w-full px-4 py-3 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 rounded-b-xl transition-colors"
+                            className="w-full px-4 py-3 text-left text-sm font-medium font-avenir text-red-600 hover:bg-red-50 flex items-center gap-2 rounded-b-xl transition-colors"
                         >
                             <LogOut className="w-4 h-4" />
                             Logout
                         </button>
+
                     </div>
                 </div>
             </div>

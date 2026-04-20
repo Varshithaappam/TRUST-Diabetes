@@ -15,7 +15,7 @@ const ROLE_MAP = {
  */
 export const register = async (req, res) => {
     try {
-        const { email, password, firstName, lastName, requestedRole } = req.body;
+        const { email, password, firstName, lastName, requestedRole, providerId } = req.body;
 
         if (!email || !password || !firstName) {
             return res.status(400).json({ message: 'Missing required fields.' });
@@ -30,9 +30,9 @@ export const register = async (req, res) => {
         const roleId = ROLE_MAP[requestedRole] || ROLE_MAP['Clinician'];
 
         const result = await pool.query(
-            `INSERT INTO users (email, password, first_name, last_name, role_id, status, name) 
-             VALUES ($1, $2, $3, $4, $5, 'active', $6) RETURNING id, email`,
-            [email, hashedPassword, firstName, lastName, roleId, `${firstName} ${lastName}`.trim()]
+            `INSERT INTO users (email, password, first_name, last_name, role_id, status, name, provider_id) 
+             VALUES ($1, $2, $3, $4, $5, 'active', $6, $7) RETURNING id, email`,
+            [email, hashedPassword, firstName, lastName, roleId, `${firstName} ${lastName}`.trim(), providerId || null]
         );
 
         res.status(201).json({ message: 'User registered successfully', user: result.rows[0] });
@@ -138,6 +138,7 @@ export const createUser = async (req, res) => {
             validClinicIds = clinicIds.filter(id => validClinicIdsArr.includes(id));
         }
 
+
         const hashedPassword = await bcrypt.hash(password, 10);
         const roleId = ROLE_MAP[role] || ROLE_MAP['Clinician'];
         const userStatus = (typeof status === 'string') ? status : (status === false ? 'deactive' : 'active');
@@ -164,6 +165,91 @@ export const createUser = async (req, res) => {
     } catch (error) {
         await client.query('ROLLBACK');
         console.error('Create error:', error);
+        res.status(500).json({ message: error.message });
+    } finally {
+        client.release();
+    }
+};
+
+/**
+ * UPDATE USER - Update an existing user (Admin only)
+ */
+export const updateUser = async (req, res) => {
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        const { id } = req.params;
+        const { suffix, firstName, lastName, role, gender, status, siteIds = [], clinicIds = [], password } = req.body;
+
+        // Check if user exists
+        const existingUser = await client.query('SELECT id, email FROM users WHERE id = $1', [id]);
+        if (existingUser.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Validate that provided siteIds exist in site_master
+        let validSiteIds = siteIds;
+        if (siteIds && siteIds.length > 0) {
+            const validSites = await client.query(
+                'SELECT site_id FROM site_master WHERE site_id = ANY($1::uuid[])',
+                [siteIds]
+            );
+            const validSiteIdsArr = validSites.rows.map(s => s.site_id);
+            validSiteIds = siteIds.filter(siteId => validSiteIdsArr.includes(siteId));
+        } else {
+            validSiteIds = [];
+        }
+
+        // Validate that provided clinicIds exist in clinic_master
+        let validClinicIds = clinicIds;
+        if (clinicIds && clinicIds.length > 0) {
+            const validClinics = await client.query(
+                'SELECT clinic_id FROM clinic_master WHERE clinic_id = ANY($1::uuid[])',
+                [clinicIds]
+            );
+            const validClinicIdsArr = validClinics.rows.map(c => c.clinic_id);
+            validClinicIds = clinicIds.filter(clinicId => validClinicIdsArr.includes(clinicId));
+        } else {
+            validClinicIds = [];
+        }
+
+        // Prepare update fields - use a fixed query with optional password
+        const roleId = ROLE_MAP[role] || ROLE_MAP['Clinician'];
+        const userStatus = status || 'active';
+        const fullName = `${firstName} ${lastName}`.trim();
+        const roleText = role || 'Clinician';
+
+        let userResult;
+        if (password) {
+            const hashedPassword = await bcrypt.hash(password, 10);
+            userResult = await client.query(
+                `UPDATE users SET suffix = $1, first_name = $2, last_name = $3, name = $4, role = $5, role_id = $6, gender = $7, status = $8, password = $9 WHERE id = $10 RETURNING id, email, first_name, last_name, role, role_id`,
+                [suffix, firstName, lastName, fullName, roleText, roleId, gender, userStatus, hashedPassword, id]
+            );
+        } else {
+            userResult = await client.query(
+                `UPDATE users SET suffix = $1, first_name = $2, last_name = $3, name = $4, role = $5, role_id = $6, gender = $7, status = $8 WHERE id = $9 RETURNING id, email, first_name, last_name, role, role_id`,
+                [suffix, firstName, lastName, fullName, roleText, roleId, gender, userStatus, id]
+            );
+        }
+
+        // Delete existing mappings and insert new ones
+        await client.query('DELETE FROM user_site_mapping WHERE user_id = $1', [id]);
+        await client.query('DELETE FROM user_clinic_mapping WHERE user_id = $1', [id]);
+
+        for (const sId of validSiteIds) {
+            await client.query(`INSERT INTO user_site_mapping (user_id, site_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`, [id, sId]);
+        }
+        for (const cId of validClinicIds) {
+            await client.query(`INSERT INTO user_clinic_mapping (user_id, clinic_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`, [id, cId]);
+        }
+
+        await client.query('COMMIT');
+        res.status(200).json({ message: 'User updated successfully', user: userResult.rows[0] });
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('Update error:', error);
         res.status(500).json({ message: error.message });
     } finally {
         client.release();

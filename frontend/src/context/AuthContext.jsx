@@ -25,7 +25,16 @@ export const AuthProvider = ({ children }) => {
     const fetchUser = async () => {
         try {
             const response = await axios.get(`${API_URL}/me`);
-            setUser(response.data.user);
+            const userData = response.data.user;
+            setUser(userData);
+            
+            // Store allotted sites and clinics for non-admin users
+            if (userData.allottedSites) {
+                localStorage.setItem('allottedSites', JSON.stringify(userData.allottedSites));
+            }
+            if (userData.allottedClinics) {
+                localStorage.setItem('allottedClinics', JSON.stringify(userData.allottedClinics));
+            }
         } catch (error) {
             console.error('Failed to fetch user:', error);
             logout();
@@ -43,6 +52,14 @@ export const AuthProvider = ({ children }) => {
             localStorage.setItem('token', newToken);
             localStorage.setItem('user', JSON.stringify(userData));
             
+            // Store allotted sites and clinics for non-admin users
+            if (userData.allottedSites) {
+                localStorage.setItem('allottedSites', JSON.stringify(userData.allottedSites));
+            }
+            if (userData.allottedClinics) {
+                localStorage.setItem('allottedClinics', JSON.stringify(userData.allottedClinics));
+            }
+            
             setToken(newToken);
             setUser(userData);
             
@@ -58,6 +75,8 @@ export const AuthProvider = ({ children }) => {
     const logout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+        localStorage.removeItem('allottedSites');
+        localStorage.removeItem('allottedClinics');
         setToken(null);
         setUser(null);
         delete axios.defaults.headers.common['Authorization'];

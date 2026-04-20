@@ -43,6 +43,7 @@ const GlobalFilterBar = ({ filters, setFilters, onSearch, isSearching, onDownloa
         setDraftFilters(filters);
     }, [filters]);
 
+    // Fetch initial filter options (sites, consultants, initial clinics)
     useEffect(() => {
         const fetchOptions = async () => {
             try {
@@ -106,6 +107,49 @@ const GlobalFilterBar = ({ filters, setFilters, onSearch, isSearching, onDownloa
 
         fetchOptions();
     }, []); // Only run once on mount
+
+    // Fetch clinics when site changes (cascading dropdown)
+    useEffect(() => {
+        const fetchClinicsForSite = async () => {
+            const site = draftFilters.site;
+            // Skip if site is "All Sites" or empty
+            if (!site || site === 'All Sites') {
+                // For admin with "All Sites", we already have all clinics from initial fetch
+                // For non-admin, sites list doesn't contain "All Sites", so skip if no site
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem('token');
+                const res = await axios.get(`http://localhost:5000/api/filters/clinics-by-site?site=${encodeURIComponent(site)}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (res.data && res.data.clinics) {
+                    const userRole = localStorage.getItem('userRole');
+                    const clinicsList = userRole === 'Administrator'
+                        ? ['All Clinics', ...res.data.clinics]
+                        : res.data.clinics;
+                    
+                    setOptions(prev => ({
+                        ...prev,
+                        clinics: clinicsList
+                    }));
+                    
+                    // Reset clinic selection to first available clinic (or empty if none)
+                    const newClinic = res.data.clinics.length > 0 ? res.data.clinics[0] : '';
+                    setDraftFilters(prev => ({
+                        ...prev,
+                        clinic: newClinic
+                    }));
+                }
+            } catch (err) {
+                console.error("Failed to load clinics for site:", err);
+            }
+        };
+
+        fetchClinicsForSite();
+    }, [draftFilters.site]);
 
     const updateDraftFilter = (key, value) => {
         setDraftFilters(prev => ({ ...prev, [key]: value }));

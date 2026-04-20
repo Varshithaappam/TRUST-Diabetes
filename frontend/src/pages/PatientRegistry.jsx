@@ -338,5 +338,3 @@ const PatientRegistry = ({ filters: externalFilters }) => {
 };
 
 export default PatientRegistry;
-
-

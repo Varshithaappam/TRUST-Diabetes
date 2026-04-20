@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { 
     Users, Check, X, UserPlus, Search, 
     MapPin, Building2, Phone, Mail, User, 
-    ChevronDown, Plus, Globe, UserCheck, UserX
+    ChevronDown, Plus, Globe, UserCheck, UserX, Pencil
 } from 'lucide-react';
 import AddHospitalForm from './AddHospital';
 import AddSiteForm from './AddSite';
@@ -111,6 +111,14 @@ const UserManagement = () => {
     
     // Toast state
     const [toast, setToast] = useState(null);
+    
+    // Edit modal state
+    const [editModalOpen, setEditModalOpen] = useState(false);
+    const [editingUser, setEditingUser] = useState(null);
+    const [editFormData, setEditFormData] = useState({
+        suffix: '', firstName: '', lastName: '', email: '', password: '',
+        role: 'Clinician', gender: 'Male', status: 'active', siteIds: [], clinicIds: []
+    });
 
     const [formData, setFormData] = useState({
         suffix: '', firstName: '', lastName: '', email: '', password: '',
@@ -157,6 +165,39 @@ const UserManagement = () => {
         return () => controller.abort(); 
     }, [formData.siteIds, token]);
 
+    // Fetch clinics for edit modal
+    const [editClinics, setEditClinics] = useState([]);
+    const [loadingEditClinics, setLoadingEditClinics] = useState(false);
+    
+    useEffect(() => {
+        const controller = new AbortController();
+        const fetchEditClinics = async () => {
+            if (!token || !editModalOpen) return;
+            if (!editFormData.siteIds || editFormData.siteIds.length === 0) {
+                setEditClinics([]);
+                return;
+            }
+
+            setLoadingEditClinics(true);
+            try {
+                const config = { 
+                    headers: { Authorization: `Bearer ${token}` },
+                    signal: controller.signal 
+                };
+                const siteIdsParam = editFormData.siteIds.join(',');
+                const response = await axios.get(`http://localhost:5000/api/users/clinics?siteIds=${siteIdsParam}`, config);
+                const fetchedClinics = response.data || [];
+                setEditClinics(fetchedClinics);
+            } catch (err) {
+                if (!axios.isCancel(err)) setEditClinics([]);
+            } finally {
+                setLoadingEditClinics(false);
+            }
+        };
+        fetchEditClinics();
+        return () => controller.abort(); 
+    }, [editFormData.siteIds, token, editModalOpen]);
+
     const fetchInitialData = async () => {
         setLoading(true);
         try {
@@ -186,6 +227,48 @@ const UserManagement = () => {
             setUsers(users.map(u => u.id === userId ? { ...u, status: newStatus } : u));
         } catch (err) {
             alert("Failed to update user status.");
+        }
+    };
+
+    const handleEditUser = (user) => {
+        // Pre-populate form with user's current data
+        const userSiteIds = user.sites?.map(s => s.site_id) || [];
+        const userClinicIds = user.clinics?.map(c => c.clinic_id) || [];
+        
+        setEditingUser(user);
+        setEditFormData({
+            suffix: user.suffix || '',
+            firstName: user.first_name || '',
+            lastName: user.last_name || '',
+            email: user.email || '',
+            password: '', // Empty - will keep current password if not changed
+            role: user.role || 'Clinician',
+            gender: user.gender || 'Male',
+            status: user.status || 'active',
+            siteIds: userSiteIds,
+            clinicIds: userClinicIds
+        });
+        setEditModalOpen(true);
+    };
+
+    const handleEditSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const config = { headers: { Authorization: `Bearer ${token}` } };
+            
+            // Only include password if it was changed (non-empty)
+            const payload = { ...editFormData };
+            if (!payload.password) {
+                delete payload.password;
+            }
+            
+            await axios.put(`http://localhost:5000/api/users/${editingUser.id}`, payload, config);
+            alert("User Updated Successfully");
+            setEditModalOpen(false);
+            setEditingUser(null);
+            fetchInitialData();
+        } catch (err) {
+            alert(err.response?.data?.message || "Error updating user");
         }
     };
 
@@ -250,16 +333,25 @@ const UserManagement = () => {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 text-right">
-                                            <button 
-                                                onClick={() => handleToggleStatus(user.id, user.status)}
-                                                className={`p-2 rounded-xl border transition-all ${
-                                                    user.status === 'active' 
-                                                    ? 'text-rose-600 border-rose-100 hover:bg-rose-600 hover:text-white' 
-                                                    : 'text-emerald-600 border-emerald-100 hover:bg-emerald-600 hover:text-white'
-                                                }`}
-                                            >
-                                                {user.status === 'active' ? <UserX size={18} /> : <UserCheck size={18} />}
-                                            </button>
+                                            <div className="flex items-center justify-end gap-2">
+                                                <button 
+                                                    onClick={() => handleEditUser(user)}
+                                                    className="p-2 rounded-xl border border-indigo-100 text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all"
+                                                    title="Edit User"
+                                                >
+                                                    <Pencil size={18} />
+                                                </button>
+                                                <button 
+                                                    onClick={() => handleToggleStatus(user.id, user.status)}
+                                                    className={`p-2 rounded-xl border transition-all ${
+                                                        user.status === 'active' 
+                                                        ? 'text-rose-600 border-rose-100 hover:bg-rose-600 hover:text-white' 
+                                                        : 'text-emerald-600 border-emerald-100 hover:bg-emerald-600 hover:text-white'
+                                                    }`}
+                                                >
+                                                    {user.status === 'active' ? <UserX size={18} /> : <UserCheck size={18} />}
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
@@ -422,6 +514,147 @@ const UserManagement = () => {
                     type={toast.type} 
                     onClose={() => setToast(null)} 
                 />
+            )}
+
+            {/* Edit User Modal */}
+            {editModalOpen && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-3xl shadow-xl max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+                        <div className="p-8">
+                            <div className="flex items-center justify-between mb-6">
+                                <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                                    <Pencil className="w-6 h-6 text-indigo-600" /> Edit User Profile
+                                </h3>
+                                <button 
+                                    onClick={() => {
+                                        setEditModalOpen(false);
+                                        setEditingUser(null);
+                                    }}
+                                    className="p-2 hover:bg-gray-100 rounded-xl transition-all"
+                                >
+                                    <X className="w-5 h-5 text-gray-500" />
+                                </button>
+                            </div>
+
+                            <form onSubmit={handleEditSubmit} className="max-w-6xl mx-auto">
+                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                    <div className="lg:col-span-2 bg-gray-50 p-8 rounded-3xl border border-gray-100">
+                                        <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                                            <User className="w-6 h-6 text-indigo-600" /> Basic Information
+                                        </h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="flex items-center gap-4">
+                                                <select 
+                                                    className="w-24 p-3 bg-white border border-gray-200 rounded-xl text-sm"
+                                                    value={editFormData.suffix} 
+                                                    onChange={e => setEditFormData({...editFormData, suffix: e.target.value})}
+                                                >
+                                                    <option value="">Suffix</option>
+                                                    <option value="Mr.">Mr.</option>
+                                                    <option value="Mrs.">Mrs.</option>
+                                                    <option value="Ms.">Ms.</option>
+                                                    <option value="Dr.">Dr.</option>
+                                                </select>
+                                                <input 
+                                                    placeholder="First Name" 
+                                                    required 
+                                                    className="flex-1 p-3 bg-white border border-gray-200 rounded-xl text-sm"
+                                                    value={editFormData.firstName} 
+                                                    onChange={e => setEditFormData({...editFormData, firstName: e.target.value})}
+                                                />
+                                            </div>
+                                            <input 
+                                                placeholder="Last Name" 
+                                                required 
+                                                className="p-3 bg-white border border-gray-200 rounded-xl text-sm"
+                                                value={editFormData.lastName} 
+                                                onChange={e => setEditFormData({...editFormData, lastName: e.target.value})}
+                                            />
+                                            <input 
+                                                type="email" 
+                                                placeholder="Email Address" 
+                                                required 
+                                                disabled
+                                                className="p-3 bg-gray-100 border border-gray-200 rounded-xl text-sm cursor-not-allowed"
+                                                value={editFormData.email} 
+                                            />
+                                            <div>
+                                                <input 
+                                                    type="password" 
+                                                    placeholder="New Password (leave empty to keep current)" 
+                                                    className="p-3 bg-white border border-gray-200 rounded-xl text-sm w-full"
+                                                    value={editFormData.password} 
+                                                    onChange={e => setEditFormData({...editFormData, password: e.target.value})}
+                                                />
+                                                <p className="text-xs text-gray-400 mt-1">Leave empty to keep current password</p>
+                                            </div>
+                                            <select 
+                                                className="p-3 bg-white border border-gray-200 rounded-xl text-sm"
+                                                value={editFormData.role} 
+                                                onChange={e => setEditFormData({...editFormData, role: e.target.value})}
+                                            >
+                                                <option value="Clinician">Clinician</option>
+                                                <option value="Analyst">Analyst</option>
+                                                <option value="Administrator">Administrator</option>
+                                            </select>
+                                            <select 
+                                                className="p-3 bg-white border border-gray-200 rounded-xl text-sm"
+                                                value={editFormData.gender} 
+                                                onChange={e => setEditFormData({...editFormData, gender: e.target.value})}
+                                            >
+                                                <option value="Male">Male</option>
+                                                <option value="Female">Female</option>
+                                            </select>
+                                            <select 
+                                                className="p-3 bg-white border border-gray-200 rounded-xl text-sm"
+                                                value={editFormData.status} 
+                                                onChange={e => setEditFormData({...editFormData, status: e.target.value})}
+                                            >
+                                                <option value="active">Active</option>
+                                                <option value="deactive">Deactive</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-gray-50 p-8 rounded-3xl border border-gray-100 flex flex-col">
+                                        <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                                            <Globe className="w-6 h-6 text-indigo-600" /> Access & Mappings
+                                        </h3>
+                                        
+                                        <MultiSelectDropdown 
+                                            label="Assign Sites" 
+                                            options={sites} 
+                                            idKey="site_id"
+                                            labelKey="site_name"
+                                            selected={editFormData.siteIds} 
+                                            onChange={ids => setEditFormData({...editFormData, siteIds: ids, clinicIds: []})}
+                                            placeholder="Select Sites..."
+                                        />
+                                        <MultiSelectDropdown 
+                                            label="Assign Clinics" 
+                                            options={editClinics} 
+                                            idKey="clinic_id"
+                                            labelKey="clinic_name"
+                                            selected={editFormData.clinicIds} 
+                                            onChange={ids => setEditFormData({...editFormData, clinicIds: ids})}
+                                            placeholder={editFormData.siteIds.length === 0 ? "Select Sites first..." : "Select Clinics..."}
+                                            loading={loadingEditClinics}
+                                        />
+
+                                        <div className="mt-auto pt-8">
+                                            <button 
+                                                type="submit" 
+                                                className="w-full bg-indigo-600 text-white font-bold py-4 rounded-2xl shadow-lg hover:bg-indigo-700 transition-all flex items-center justify-center gap-2"
+                                            >
+                                                <Plus className="w-5 h-5" /> Update User Profile
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );

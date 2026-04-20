@@ -9,6 +9,7 @@ import PredictiveDashboard from './pages/PredictiveDashboard';
 import AIAnalyst from './components/AIAnalyst';
 import UserManagement from './pages/UserManagement';
 import Login from './pages/Login';
+import ResetPassword from './pages/ResetPassword';
 import ProfileSettings from './pages/ProfileSettings';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoutes';
@@ -23,7 +24,7 @@ const Dashboard = () => {
     const { user, hasRole } = useAuth();
     
     // Current Active Tab
-    const [activeTab, setActiveTab] = useState('REGISTRY');
+    const [activeTab, setActiveTab] = useState('DASHBOARD');
     
     // THE GLOBAL STATE - Persistent across all tabs
     // Default: No date filter to show all patients
@@ -205,10 +206,10 @@ const Dashboard = () => {
                         <button 
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
-                            className={`px-6 py-2 rounded-lg text-[12px] tracking-widest font-black transition-all font-display-bold ${
+                            className={`px-6 py-2 rounded-lg text-[12px] tracking-widest font-black transition-all font-avenir ${
                                 activeTab === tab.id 
-                                ? 'bg-indigo-600 text-white shadow-md' 
-                                : 'text-slate-400 hover:text-slate-600'
+                                ? 'bg-[#005FBE] text-white shadow-md' 
+                                : 'text-black hover:text-black'
                             }`}
                         >
                             {tab.label}
@@ -255,8 +256,18 @@ const App = () => {
                 <Routes>
                     {/* Public Routes */}
                     <Route path="/login" element={<Login />} />
+                    <Route path="/reset-password" element={<ResetPassword />} />
                     
                     {/* Protected Routes */}
+                    <Route 
+                        path="/dashboard" 
+                        element={
+                            <ProtectedRoute>
+                                <Dashboard />
+                            </ProtectedRoute>
+                        } 
+                    />
+                    
                     <Route 
                         path="/" 
                         element={

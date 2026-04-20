@@ -18,7 +18,7 @@ const ChartCard = ({ title, subtitle, children }) => (
     </div>
 );
 
-const RiskStratificationPie = ({ patients }) => {
+const RiskStratificationPie = ({ patients, onRiskFilterChange, activeRiskFilter }) => {
     // Calculate risk distribution dynamically based on scored patients
     const riskDistribution = React.useMemo(() => {
         if (!patients || patients.length === 0) {
@@ -40,8 +40,25 @@ const RiskStratificationPie = ({ patients }) => {
         return Object.entries(counts).map(([name, value]) => ({ name, value }));
     }, [patients]);
 
+    // Handle click on pie segment
+    const handleClick = (data) => {
+        if (onRiskFilterChange) {
+            // Toggle: if clicking same segment, deselect it
+            if (activeRiskFilter === data.name) {
+                onRiskFilterChange(null);
+            } else {
+                onRiskFilterChange(data.name);
+            }
+        }
+    };
+
+    // Determine if a segment should be dimmed (when another filter is active)
+    const isDimmed = (segmentName) => {
+        return activeRiskFilter && activeRiskFilter !== segmentName;
+    };
+
     return (
-        <ChartCard title="Cohort Risk Stratification" subtitle="Patient Risk Levels">
+        <ChartCard title="Cohort Risk Stratification" subtitle="Click to Filter">
             <div className="h-64 flex items-center justify-center" style={{ minHeight: 256 }}>
                 <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -54,14 +71,23 @@ const RiskStratificationPie = ({ patients }) => {
                             paddingAngle={3}
                             dataKey="value"
                             nameKey="name"
+                            onClick={handleClick}
+                            style={{ cursor: 'pointer' }}
                         >
-                            {riskDistribution.map((entry, index) => (
-                                <Cell key={entry.name} fill={
-                                    entry.name === 'High' ? COLORS.High :
-                                    entry.name === 'Low' ? COLORS.Low :
-                                    entry.name === 'Medium' ? COLORS.Medium :
-                                    entry.name === 'N/A' ? COLORS['N/A'] : '#64748b'
-                                } />
+                            {riskDistribution.map((entry) => (
+                                <Cell 
+                                    key={entry.name} 
+                                    fill={
+                                        isDimmed(entry.name) 
+                                            ? `${entry.name === 'High' ? COLORS.High : entry.name === 'Low' ? COLORS.Low : entry.name === 'Medium' ? COLORS.Medium : COLORS['N/A']}33`
+                                            : entry.name === 'High' ? COLORS.High :
+                                            entry.name === 'Low' ? COLORS.Low :
+                                            entry.name === 'Medium' ? COLORS.Medium :
+                                            entry.name === 'N/A' ? COLORS['N/A'] : '#64748b'
+                                    }
+                                    stroke={activeRiskFilter === entry.name ? '#1e293b' : 'none'}
+                                    strokeWidth={activeRiskFilter === entry.name ? 3 : 0}
+                                />
                             ))}
                         </Pie>
                         <Tooltip />
@@ -69,9 +95,11 @@ const RiskStratificationPie = ({ patients }) => {
                     </PieChart>
                 </ResponsiveContainer>
             </div>
+            <p className="text-[10px] text-slate-400 text-center mt-2">
+                💡 Click on segments to filter High Risk Candidates
+            </p>
         </ChartCard>
     );
 };
 
 export default RiskStratificationPie;
-

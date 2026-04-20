@@ -228,7 +228,7 @@ const AddSiteForm = ({ onSuccess, onCancel }) => {
                 <button
                     type="submit"
                     disabled={loading}
-                    className="flex-1 bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="flex-1 bg-[#005FBE] text-white font-bold py-3 rounded-xl hover:bg-[#5D89E9] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                     {loading ? (
                         'Saving...'

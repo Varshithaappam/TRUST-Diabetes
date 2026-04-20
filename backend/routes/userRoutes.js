@@ -15,7 +15,8 @@ import {
     addSite,
     addClinic,
     getUserProfile,
-    updateUserProfile
+    updateUserProfile,
+    updateUser
 } from '../controllers/userController.js';
 import { authenticate } from '../middleware/authMiddleware.js';
 import { authorize } from '../middleware/authMiddleware.js';
@@ -57,6 +58,9 @@ router.post('/sites', authenticate, authorize(['Administrator']), createSite);
 
 // Add this to your existing routes
 router.patch('/:id/status', authenticate, authorize(['Administrator']), toggleUserStatus);
+
+// PUT /api/users/:id - Update user (Admin only)
+router.put('/:id', authenticate, authorize(['Administrator']), updateUser);
 
 router.post('/add-site', authenticate, authorize(['Administrator']), addSite);
 router.post('/add-clinic', authenticate, authorize(['Administrator']), addClinic);
