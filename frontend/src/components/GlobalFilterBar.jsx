@@ -11,17 +11,24 @@ const FilterItem = ({ label, children }) => (
 
 const FilterSelect = ({ label, value, onChange, options }) => (
     <FilterItem label={label}>
-        <select 
-            value={value} 
-            onChange={(e) => onChange(e.target.value)}
-            className="bg-transparent border-none text-[13px] font-bold text-black outline-none cursor-pointer appearance-none w-full font-electronic-bold"
-        >
-            {options && options.length > 0 ? (
-                options.map(opt => <option key={opt} value={opt}>{opt}</option>)
-            ) : (
-                <option disabled>Loading...</option>
-            )}
-        </select>
+        <div className="relative">
+            <select 
+                value={value} 
+                onChange={(e) => onChange(e.target.value)}
+                className="bg-transparent border-none text-[13px] font-bold text-black outline-none cursor-pointer appearance-none w-full pr-6 font-electronic-bold"
+            >
+                {options && options.length > 0 ? (
+                    options.map(opt => <option key={opt} value={opt}>{opt}</option>)
+                ) : (
+                    <option disabled>Loading...</option>
+                )}
+            </select>
+
+            {/* 👇 Down arrow */}
+            <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-black text-xs">
+                ▼
+            </span>
+        </div>
     </FilterItem>
 );
 
@@ -43,9 +50,9 @@ const GlobalFilterBar = ({ filters, setFilters, onSearch, isSearching, onDownloa
         setDraftFilters(filters);
     }, [filters]);
 
-    // Fetch initial filter options (sites, consultants, initial clinics)
+    // Fetch initial filter options (sites, consultants) and set initial site/clinic
     useEffect(() => {
-        const fetchOptions = async () => {
+        const fetchInitialOptions = async () => {
             try {
                 const token = localStorage.getItem('token');
                 const userRole = localStorage.getItem('userRole');
@@ -63,27 +70,48 @@ const GlobalFilterBar = ({ filters, setFilters, onSearch, isSearching, onDownloa
                         ? ['All Sites', ...(res.data.sites || [])]
                         : res.data.sites || [];
                     
-                    const clinicsList = userRole === 'Administrator'
-                        ? ['All Clinics', ...(res.data.clinics || [])]
-                        : res.data.clinics || [];
-                    
                     setOptions(prev => ({
                         ...prev,
                         ...res.data,
                         consultants: ['All Consultants', ...(res.data.consultants || [])],
-                        sites: sitesList,
-                        clinics: clinicsList
+                        sites: sitesList
                     }));
                     
-                    // For non-Administrator users, default to first site (no "All Sites" option)
+                    // For non-Administrator users, set site to first assigned site and fetch clinics for that site
                     let initialSite;
-                    let initialClinic;
+                    let initialClinic = '';
                     if (userRole && userRole !== 'Administrator') {
                         initialSite = res.data.sites?.[0] || '';
-                        initialClinic = res.data.clinics?.[0] || '';
+                        // Fetch clinics for the initial site
+                        if (initialSite) {
+                            try {
+                                const clinicsRes = await axios.get(`http://localhost:5000/api/filters/clinics-by-site?site=${encodeURIComponent(initialSite)}`, {
+                                    headers: { 'Authorization': `Bearer ${token}` }
+                                });
+                                if (clinicsRes.data && clinicsRes.data.clinics) {
+                                    const clinicsList = clinicsRes.data.clinics;
+                                    setOptions(prev => ({
+                                        ...prev,
+                                        clinics: clinicsList
+                                    }));
+                                    initialClinic = clinicsList.length > 0 ? clinicsList[0] : '';
+                                }
+                            } catch (err) {
+                                console.error("Failed to load initial clinics:", err);
+                                initialClinic = '';
+                            }
+                        }
                     } else {
                         initialSite = 'All Sites';
                         initialClinic = 'All Clinics';
+                        // For admin, use all clinics from the initial fetch
+                        const clinicsList = userRole === 'Administrator'
+                            ? ['All Clinics', ...(res.data.clinics || [])]
+                            : res.data.clinics || [];
+                        setOptions(prev => ({
+                            ...prev,
+                            clinics: clinicsList
+                        }));
                     }
                     const initialConsultant = 'All Consultants';
 
@@ -101,11 +129,11 @@ const GlobalFilterBar = ({ filters, setFilters, onSearch, isSearching, onDownloa
                     });
                 }
             } catch (err) {
-                console.error("Failed to load filters:", err);
+                console.error("Failed to load initial filters:", err);
             }
         };
 
-        fetchOptions();
+        fetchInitialOptions();
     }, []); // Only run once on mount
 
     // Fetch clinics when site changes (cascading dropdown)
@@ -205,13 +233,13 @@ const GlobalFilterBar = ({ filters, setFilters, onSearch, isSearching, onDownloa
                     <button 
                         onClick={handleSearchClick}
                         disabled={isSearching}
-                        className="bg-emerald-600 text-white px-6 py-2 rounded-lg text-[12px] font-black uppercase tracking-wider hover:bg-emerald-700 disabled:opacity-50 font-display-bold"
+                        className="bg-[#005FBE] text-white px-6 py-2 rounded-lg text-[12px] font-black uppercase tracking-wider hover:bg-[#004B87] disabled:opacity-50 font-display-bold"
                     >
                         {isSearching ? 'Searching...' : 'Search'}
                     </button>
                     <button 
                         onClick={handleReset}
-                        className="bg-amber-500 text-white px-4 py-2 rounded-lg text-[12px] font-black uppercase hover:bg-amber-600 font-display-bold"
+                        className="bg-[#005FBE] text-white px-4 py-2 rounded-lg text-[12px] font-black uppercase hover:bg-[#005FBE] font-display-bold"
                     >
                         Reset
                     </button>
@@ -221,7 +249,7 @@ const GlobalFilterBar = ({ filters, setFilters, onSearch, isSearching, onDownloa
             </div>
 
             {/* Change the grid definition to allow for custom spans */}
-<div className="grid grid-cols-1 md:grid-cols-6 lg:grid-cols-16 gap-3">
+<div className="grid grid-cols-1 md:grid-cols-6 lg:grid-cols-18 gap-3">
     
     {/* Standard Size (1 Span) */}
     <div className="lg:col-span-2">
@@ -253,10 +281,10 @@ const GlobalFilterBar = ({ filters, setFilters, onSearch, isSearching, onDownloa
     <div className="lg:col-span-2">
         <FilterSelect label="CONTROL" value={draftFilters.control} onChange={(v) => updateDraftFilter('control', v)} options={options.control} />
     </div>
-    <div className="lg:col-span-1">
+    <div className="lg:col-span-2">
         <FilterSelect label="GENDER" value={draftFilters.gender} onChange={(v) => updateDraftFilter('gender', v)} options={options.gender} />
     </div>
-    <div className="lg:col-span-1">
+    <div className="lg:col-span-2">
         <FilterSelect label="AGE" value={draftFilters.age} onChange={(v) => updateDraftFilter('age', v)} options={options.age} />
     </div>
 </div>

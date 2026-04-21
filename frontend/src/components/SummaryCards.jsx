@@ -71,7 +71,7 @@ const SummaryCards = ({ filters }) => {
             title="Total Sites" 
             value={stats.total_sites.toLocaleString()} 
             icon="🏥" 
-            color="text-emerald-600" 
+            color="text-indigo-600" 
         />
         <StatCard 
             title="Total Consultants" 

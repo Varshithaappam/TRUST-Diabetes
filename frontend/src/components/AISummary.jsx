@@ -130,7 +130,7 @@
                         {analysis}
                     </div>
                 ) : (
-                    <p className="text-lg font-bold text-slate-700 italic font-display-bold">Click generate to receive a clinical overview of the filtered data.</p>
+                    <p className="text-lg font-bold text-slate-700 italic font-anvier">Click generate to receive a clinical overview of the filtered data.</p>
                 )}
             </div>
         );

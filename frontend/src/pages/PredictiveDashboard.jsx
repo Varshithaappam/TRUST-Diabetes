@@ -192,7 +192,7 @@ const PredictiveDashboard = ({ filters }) => {
         <div className="p-6 bg-slate-50 min-h-screen">
             <div className="mb-8 flex justify-between items-start">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                    <h1 className="text-2xl font-anvier uppercase text-slate-800 flex items-center gap-2">
                         <span className="p-2 bg-white rounded-full shadow-sm">🧠</span> 
                         Predictive Risk Engine
                     </h1>

@@ -249,14 +249,17 @@ const AnalyticsDashboard = ({
                                 data={distributionData}
                                 cx="50%"
                                 cy="50%"
-                                innerRadius={80}
-                                outerRadius={120} 
+                                innerRadius={60}
+                                outerRadius={90}
                                 paddingAngle={3}
                                 dataKey="value"
                                 nameKey="name"
                                 onClick={(data) => handleFilterChange('status', data.name)}
                                 style={{ cursor: 'pointer' }}
                                 label={({ cx, cy, midAngle, outerRadius, value, name }) => {
+                                    const total = distributionData.reduce((sum, d) => sum + d.value, 0);
+                                    const percent = ((value / total) * 100).toFixed(1);
+
                                     const RADIAN = Math.PI / 180;
                                     const radius = outerRadius + 25;
                                     const x = cx + radius * Math.cos(-midAngle * RADIAN);
@@ -272,10 +275,10 @@ const AnalyticsDashboard = ({
                                             style={{ 
                                                 fontSize: '14px', 
                                                 fontWeight: '600', 
-                                                fontFamily: 'Inter, sans-serif' 
+                                                fontFamily: '"Avenir", sans-serif'
                                             }}
                                         >
-                                            {`${name}: ${value}`}
+                                            {`${name}: ${value} (${percent}%)`}
                                         </text>
                                     );
                                 }}
@@ -364,11 +367,45 @@ const AnalyticsDashboard = ({
                                     barSize={35}
                                     style={{ cursor: 'pointer' }}
                                 >
-                                    <LabelList 
-                                        dataKey="uncontrolled" 
-                                        position="top" 
-                                        offset={10} 
-                                        style={{ fill: '#475569', fontSize: '13px', fontWeight: 'bold' }} 
+                                    <LabelList
+                                        dataKey="uncontrolled"
+                                        content={({ x, y, width, height, value }) => {
+                                            const total = criticalCases.reduce((sum, d) => sum + d.uncontrolled, 0);
+                                            const percent = ((value / total) * 100).toFixed(1);
+
+                                            return (
+                                                <text
+                                                    x={x + width / 2}
+                                                    y={y + height / 2}
+                                                    textAnchor="middle"
+                                                    dominantBaseline="middle"
+                                                    fill="#ffffff"
+                                                    fontSize="12"
+                                                    fontWeight="bold"
+                                                >
+                                                    {`${percent}%`}
+                                                </text>
+                                            );
+                                        }}
+                                    />
+                                    <LabelList
+                                        dataKey="uncontrolled"
+                                        position="top"
+                                        content={({ x, y, width, value }) => {
+                                            return (
+                                                <text
+                                                    x={x + width / 2}
+                                                    y={y - 6}
+                                                    textAnchor="middle"
+                                                    fontFamily='"Avenir", sans-serif'
+                                                    fontSize="13"
+                                                    fontWeight="700"
+                                                    fill="#1e293b"
+                                                >
+                                                    {value}
+                                                </text>
+                                            );
+                                        }}
                                     />
                                 </Bar>
                                 <Tooltip cursor={{ fill: 'transparent' }} />
@@ -398,12 +435,39 @@ const AnalyticsDashboard = ({
                                     barSize={32}
                                     style={{ cursor: 'pointer' }}
                                 >
+
+                                    {/* ✅ Percentage INSIDE bar */}
+                                    <LabelList
+                                        dataKey="count"
+                                        content={({ x, y, width, height, value }) => {
+                                            const total = consultants.reduce((sum, d) => sum + d.count, 0);
+                                            const percent = ((value / total) * 100).toFixed(1);
+
+                                            return (
+                                                <text
+                                                    x={x + width / 2}
+                                                    y={y + height / 2}
+                                                    textAnchor="middle"
+                                                    dominantBaseline="middle"
+                                                    fill="#ffffff"
+                                                    fontSize="12"
+                                                    fontWeight="bold"
+                                                    fontFamily='"Avenir", sans-serif'
+                                                >
+                                                    {`${percent}%`}
+                                                </text>
+                                            );
+                                        }}
+                                    />
+
+                                    {/* ✅ Count OUTSIDE (keep as is) */}
                                     <LabelList 
                                         dataKey="count" 
                                         position="right" 
                                         style={fontStyle} 
                                         offset={10}
                                     />
+
                                 </Bar>
                                 <Tooltip cursor={{ fill: '#f8fafc' }} />
                             </BarChart>
@@ -462,7 +526,7 @@ const AnalyticsDashboard = ({
             {/* Row 3: Demographics + Gender + Lab Trends */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 <ChartCard title={<span className="text-[16px] font-black text-black uppercase tracking-tighter drop-shadow-[0.5px_0px_0px_rgba(0,0,0,1)]">
-                    Demographics
+                    PATIENT AGE DISTRIBUTION
                 </span>} subtitle="Click Age Group to Filter">
                     <div className="h-90">
                         <ResponsiveContainer width="100%" height="100%">
@@ -475,14 +539,47 @@ const AnalyticsDashboard = ({
                                 <XAxis dataKey="name" tick={fontStyle} height={30}/>
                                 <YAxis tick={fontStyle} />
                                 <Bar 
-                                    dataKey="count" 
-                                    fill={getDemographicsColor(activeFilters?.ageGroup)}
-                                    radius={[4, 4, 0, 0]} 
-                                    barSize={40}
-                                    style={{ cursor: 'pointer' }}
-                                >
-                                    <LabelList dataKey="count" position="top" fill="#1e293b" fontSize={12} fontWeight="bold" />
-                                </Bar>
+    dataKey="count" 
+    fill={getDemographicsColor(activeFilters?.ageGroup)}
+    radius={[4, 4, 0, 0]} 
+    barSize={40}
+    style={{ cursor: 'pointer' }}
+>
+
+    {/* ✅ Percentage INSIDE bar */}
+    <LabelList
+        dataKey="count"
+        content={({ x, y, width, height, value }) => {
+            const total = demographicsData.reduce((sum, d) => sum + d.count, 0);
+            const percent = ((value / total) * 100).toFixed(1);
+
+            return (
+                <text
+                    x={x + width / 2}
+                    y={y + height / 2}
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    fill="#ffffff"
+                    fontSize="12"
+                    fontWeight="bold"
+                    fontFamily='"Avenir", sans-serif'
+                >
+                    {`${percent}%`}
+                </text>
+            );
+        }}
+    />
+
+    {/* ✅ Count ABOVE (existing) */}
+    <LabelList 
+        dataKey="count" 
+        position="top" 
+        fill="#1e293b" 
+        fontSize={12} 
+        fontWeight="bold" 
+    />
+
+</Bar>
                                 <Tooltip />
                             </BarChart>
                         </ResponsiveContainer>
@@ -507,28 +604,35 @@ const AnalyticsDashboard = ({
                                     onClick={(data) => data && data.name && handleFilterChange('gender', data.name)}
                                     activeShape={false}
                                     label={({ cx, cy, midAngle, outerRadius, value, name }) => {
-                                        const RADIAN = Math.PI / 180;
-                                        const radius = outerRadius + 25;
-                                        const x = cx + radius * Math.cos(-midAngle * RADIAN);
-                                        const y = cy + radius * Math.sin(-midAngle * RADIAN);
+    const total = gender.reduce((sum, d) => sum + d.value, 0);
+    const percent = ((value / total) * 100).toFixed(1);
 
-                                        return (
-                                            <text 
-                                                x={x} 
-                                                y={y} 
-                                                fill="#1e293b" 
-                                                textAnchor={x > cx ? 'start' : 'end'} 
-                                                dominantBaseline="central"
-                                                style={{ 
-                                                    fontSize: '16px', 
-                                                    fontWeight: '600', 
-                                                    fontFamily: 'Inter, sans-serif' 
-                                                }}
-                                            >
-                                                {`${name}: ${value}`}
-                                            </text>
-                                        );
-                                    }}
+    const RADIAN = Math.PI / 180;
+    const radius = outerRadius + 25;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+    return (
+        <text
+            x={x}
+            y={y}
+            fill="#1e293b"
+            textAnchor={x > cx ? 'start' : 'end'}
+            dominantBaseline="central"
+            fontFamily='"Avenir", sans-serif'
+        >
+            {/* Line 1: Name + Count */}
+            <tspan x={x} dy="0" fontSize="14" fontWeight="700">
+                {`${name} : ${value}`}
+            </tspan>
+
+            {/* Line 2: Percentage */}
+            <tspan x={x} dy="14" fontSize="12" fill="#64748b">
+                ({percent}%)
+            </tspan>
+        </text>
+    );
+}}
                                     labelLine={{ stroke: '#94a3b8', strokeWidth: 2 }}
                                 >
                                     {gender.map((entry) => (
@@ -554,10 +658,20 @@ const AnalyticsDashboard = ({
                     <div className="h-90" style={{minHeight: 256}}>
                         <ResponsiveContainer width="100%" height="100%">
                             <LineChart data={labTrends}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                <XAxis dataKey="month" axisLine={false} tickLine={false} fontSize={11} stroke="#94a3b8" />
-                                <YAxis yAxisId="left" orientation="left" axisLine={false} tickLine={false} fontSize={12} stroke="#94a3b8" />
-                                <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} fontSize={12} stroke="#94a3b8" />
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#707274ff" />
+                                <XAxis 
+                                    dataKey="month" 
+                                    axisLine={false} 
+                                    tickLine={false} 
+                                    fontSize={11} 
+                                    stroke="#0d0d0eff"
+                                    tickFormatter={(value) => {
+                                        const date = new Date(value);
+                                        return `${String(date.getMonth() + 1).padStart(2, '0')}-${date.getFullYear()}`;
+                                    }}
+                                />                            
+                                <YAxis yAxisId="left" orientation="left" axisLine={false} tickLine={false} fontSize={12} stroke="#0c0c0cff" />
+                                <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} fontSize={12} stroke="#070808ff" />
                                 <Tooltip />
                                 <Legend verticalAlign="top" align="right" iconType="circle" wrapperStyle={{ fontSize: '14px', paddingBottom: '38px' }} />
                                 <Line yAxisId="left" type="monotone" dataKey="avg_hba1c" stroke="#ef4444" strokeWidth={2} dot={false} name="HbA1c" />
@@ -577,8 +691,18 @@ const AnalyticsDashboard = ({
                         <ResponsiveContainer width="100%" height="100%">
                             <LineChart data={siteTrends}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                <XAxis dataKey="month" axisLine={false} tickLine={false} fontSize={12} stroke="#94a3b8" />
-                                <YAxis axisLine={false} tickLine={false} fontSize={12} stroke="#94a3b8" />
+                                <XAxis 
+                                    dataKey="month" 
+                                    axisLine={false} 
+                                    tickLine={false} 
+                                    fontSize={11} 
+                                    stroke="#030303ff"
+                                    tickFormatter={(value) => {
+                                        const date = new Date(value);
+                                        return `${String(date.getMonth() + 1).padStart(2, '0')}-${date.getFullYear()}`;
+                                    }}
+                                />
+                                <YAxis axisLine={false} tickLine={false} fontSize={12} stroke="#131314ff" />
                                 <Tooltip />
                                 <Legend verticalAlign="top" align="right" iconType="circle" wrapperStyle={{ fontSize: '12px', fontWeight: 'bold', paddingBottom: '38px' }} />
                                 {siteNames.slice(0, 6).map((site, idx) => {

@@ -52,7 +52,7 @@ const AIAnalyst = ({ globalFilters }) => {
     return (
         <div className="max-w-4xl mx-auto p-6 space-y-8">
             <header>
-                <h2 className="text-2xl font-bold flex items-center gap-2 font-anvier">
+                <h2 className="text-2xl font-bold flex items-center gap-2 font-anvier uppercase">
                     <Sparkles className="text-blue-600" /> AI Analyst
                 </h2>
                 <p className="text-slate-500 font-electronic-regular">Ask natural language questions about the filtered patient cohort.</p>

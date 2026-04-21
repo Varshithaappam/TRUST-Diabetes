@@ -298,11 +298,11 @@ const UserManagement = () => {
                         <table className="w-full text-left">
                             <thead className="bg-gray-50 border-b border-gray-100">
                                 <tr>
-                                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">User Details</th>
-                                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">Role & Gender</th>
-                                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">Assigned Locations</th>
-                                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase text-center">Status</th>
-                                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase text-right">Actions</th>
+                                    <th className="px-6 py-4 text-xs font-bold text-black-400 uppercase">User Details</th>
+                                    <th className="px-6 py-4 text-xs font-bold text-black-400 uppercase">Role & Gender</th>
+                                    <th className="px-6 py-4 text-xs font-bold text-black-400 uppercase">Assigned Locations</th>
+                                    <th className="px-6 py-4 text-xs font-bold text-black-400 uppercase text-center">Status</th>
+                                    <th className="px-6 py-4 text-xs font-bold text-black-400 uppercase text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50">
@@ -336,7 +336,7 @@ const UserManagement = () => {
                                             <div className="flex items-center justify-end gap-2">
                                                 <button 
                                                     onClick={() => handleEditUser(user)}
-                                                    className="p-2 rounded-xl border border-indigo-100 text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all"
+                                                    className="p-2 rounded-xl border border-indigo-100 text-indigo-600 hover:bg-[#005FBE] hover:text-white transition-all"
                                                     title="Edit User"
                                                 >
                                                     <Pencil size={18} />
@@ -362,7 +362,7 @@ const UserManagement = () => {
             
             case 'add':
                 return (
-                    <form onSubmit={handleSubmit} className="max-w-6xl mx-auto">
+                    <form onSubmit={handleSubmit} className="max-w-6xl mx-auto" autoComplete="off">
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             <div className="lg:col-span-2 bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
                                 <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
@@ -380,8 +380,8 @@ const UserManagement = () => {
                                         <input placeholder="First Name" required className="flex-1 p-3 bg-gray-50 border rounded-xl text-sm" value={formData.firstName} onChange={e => setFormData({...formData, firstName: e.target.value})}/>
                                     </div>
                                     <input placeholder="Last Name" required className="p-3 bg-gray-50 border rounded-xl text-sm" value={formData.lastName} onChange={e => setFormData({...formData, lastName: e.target.value})}/>
-                                    <input type="email" placeholder="Email Address" required className="p-3 bg-gray-50 border rounded-xl text-sm" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})}/>
-                                    <input type="password" placeholder="Password" required className="p-3 bg-gray-50 border rounded-xl text-sm" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})}/>
+                                    <input type="email" autoComplete="off" placeholder="Email Address" required className="p-3 bg-gray-50 border rounded-xl text-sm" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})}/>
+                                    <input type="password" autoComplete="off" placeholder="Password" required className="p-3 bg-gray-50 border rounded-xl text-sm" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})}/>
                                     <select className="p-3 bg-gray-50 border rounded-xl text-sm" value={formData.role} onChange={e => setFormData({...formData, role: e.target.value})}>
                                         <option value="Clinician">Clinician</option>
                                         <option value="Analyst">Analyst</option>
@@ -420,7 +420,7 @@ const UserManagement = () => {
                                 />
 
                                 <div className="mt-auto pt-8">
-                                    <button type="submit" className="w-full bg-indigo-600 text-white font-bold py-4 rounded-2xl shadow-lg hover:bg-indigo-700 transition-all flex items-center justify-center gap-2">
+                                    <button type="submit" className="w-full bg-[#005FBE] text-white font-bold py-4 rounded-2xl shadow-lg hover:bg-[#004B87] transition-all flex items-center justify-center gap-2">
                                         <Plus className="w-5 h-5" /> Save User Profile
                                     </button>
                                 </div>
@@ -474,31 +474,31 @@ const UserManagement = () => {
             <div className="flex gap-4 mb-8 bg-white p-2 rounded-2xl shadow-sm w-fit">
                 <button 
                     onClick={() => setActiveTab('list')} 
-                    className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === 'list' ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-500 hover:bg-gray-100'}`}
+                    className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === 'list' ? 'bg-[#005FBE] text-white shadow-md' : 'text-gray-500 hover:bg-gray-100'}`}
                 >
                     Users List
                 </button>
                 <button 
                     onClick={() => setActiveTab('add')} 
-                    className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === 'add' ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-500 hover:bg-gray-100'}`}
+                    className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === 'add' ? 'bg-[#005FBE] text-white shadow-md' : 'text-gray-500 hover:bg-gray-100'}`}
                 >
                     Add User
                 </button>
                 <button 
                     onClick={() => setActiveTab('hospital')} 
-                    className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === 'hospital' ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-500 hover:bg-gray-100'}`}
+                    className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === 'hospital' ? 'bg-[#005FBE] text-white shadow-md' : 'text-gray-500 hover:bg-gray-100'}`}
                 >
                     Add Hospital
                 </button>
                 <button 
                     onClick={() => setActiveTab('site')} 
-                    className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === 'site' ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-500 hover:bg-gray-100'}`}
+                    className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === 'site' ? 'bg-[#005FBE] text-white shadow-md' : 'text-gray-500 hover:bg-gray-100'}`}
                 >
                     Add Site
                 </button>
                 <button 
                     onClick={() => setActiveTab('clinic')} 
-                    className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === 'clinic' ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-500 hover:bg-gray-100'}`}
+                    className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === 'clinic' ? 'bg-[#005FBE] text-white shadow-md' : 'text-gray-500 hover:bg-gray-100'}`}
                 >
                     Add Clinic
                 </button>
@@ -644,7 +644,7 @@ const UserManagement = () => {
                                         <div className="mt-auto pt-8">
                                             <button 
                                                 type="submit" 
-                                                className="w-full bg-indigo-600 text-white font-bold py-4 rounded-2xl shadow-lg hover:bg-indigo-700 transition-all flex items-center justify-center gap-2"
+                                                className="w-full bg-[#005FBE] text-white font-bold py-4 rounded-2xl shadow-lg hover:bg-[#004B87] transition-all flex items-center justify-center gap-2"
                                             >
                                                 <Plus className="w-5 h-5" /> Update User Profile
                                             </button>
