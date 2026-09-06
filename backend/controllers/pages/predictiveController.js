@@ -1,7 +1,5 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import db from '../../config/db.js';
-
-const genAI = new GoogleGenAI(process.env.GEMINI_API_KEY);
 
 /**
  * Get user's allotted sites based on their role
@@ -136,20 +134,24 @@ if (allottedSites && allottedSites.length > 0) {
 
         Provide a detailed 6-month health trajectory forecast including prognosis, predicted HbA1c range, key risk factors, and recommended interventions.`;
 
+        const apiKey = process.env.GEMINI_API_KEY;
+
+        if (!apiKey) {
+            return res.status(500).json({ error: "Server configuration error: GEMINI_API_KEY is missing on this server." });
+        }
+
         console.log("Calling Gemini API...");
         
-        // Use gemini-2.5-flash which is stable
-        const response = await genAI.models.generateContent({
-            model: "gemini-3-flash-preview",
-            contents: [{
-                role: "user",
-                parts: [{ text: prompt }]
-            }],
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const model = genAI.getGenerativeModel({
+            model: process.env.GEMINI_MODEL || "gemini-2.5-flash",
             systemInstruction: systemInstruction
         });
+
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
         
-        
-        res.json({ analysis: response.text });
+        res.json({ analysis: response.text() });
 
     } catch (error) {
         console.error("AI Error:", error);

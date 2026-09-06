@@ -58,7 +58,7 @@ export const generateAIAnalysis = async (req, res) => {
 
         // Initialize the model
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
+        const model = genAI.getGenerativeModel({ model: process.env.GEMINI_MODEL || "gemini-2.5-flash" });
 
         // Create the detailed prompt with all dashboard data
         const prompt = `

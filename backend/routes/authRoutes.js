@@ -153,10 +153,9 @@ router.post('/test-email', async (req, res) => {
         // First test the connection
         const connectionTest = await testEmailConnection();
         
-        if (!connectionTest.success) {
+        if (!connectionTest) {
             return res.status(500).json({ 
-                message: 'SMTP connection failed',
-                error: connectionTest.error
+                message: 'SMTP connection failed. Check server console for details.'
             });
         }
         
